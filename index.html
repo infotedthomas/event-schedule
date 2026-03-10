@@ -199,7 +199,7 @@
 
     /* ── Main Content ── */
     .content {
-      max-width: 960px;
+      max-width: fit-content;
       margin: 0 auto;
       padding: 32px 20px 60px;
     }
@@ -278,7 +278,8 @@
 
     /* ── Schedule Table ── */
     .schedule-table {
-      width: 100%;
+      width: max-content;
+      min-width: 100%;
       border-collapse: collapse;
       border-radius: 0 0 10px 10px;
       overflow: hidden;
@@ -383,9 +384,6 @@
     .col-topic {
       color: #1a1a1a;
       font-weight: 500;
-      max-width: 280px;
-      overflow: hidden;
-      text-overflow: ellipsis;
       white-space: nowrap;
     }
 
@@ -483,7 +481,6 @@
       .schedule-table td { padding: 10px 10px; font-size: 0.85rem; }
       .col-time { min-width: 72px; }
       .col-speaker { min-width: 80px; }
-      .col-topic { max-width: 150px; }
     }
     /* ── Save Toast ── */
     .save-toast {
