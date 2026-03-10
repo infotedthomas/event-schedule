@@ -485,7 +485,86 @@
       .col-speaker { min-width: 80px; }
       .col-topic { max-width: 150px; }
     }
+    /* ── Save Toast ── */
+    .save-toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: white;
+      z-index: 10000;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      pointer-events: none;
+    }
+
+    .save-toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .save-toast.saving {
+      background: #d97706;
+    }
+
+    .save-toast.saved {
+      background: #059669;
+    }
+
+    .save-toast.error {
+      background: #dc2626;
+    }
+
+    /* ── Actions Column ── */
+    .col-actions { width: 40px; text-align: center; padding: 4px !important; }
+
+    .btn-delete {
+      background: none;
+      border: none;
+      color: #9ca3af;
+      cursor: pointer;
+      font-size: 1rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      opacity: 0.3;
+      transition: all 0.2s;
+      line-height: 1;
+    }
+    .schedule-table tbody tr:hover .btn-delete { opacity: 1; }
+    .btn-delete:hover { color: #ef4444; background: rgba(239,68,68,0.1); }
+
+    /* ── Add Row Button ── */
+    .btn-add-row {
+      display: block;
+      width: 100%;
+      padding: 8px;
+      margin-top: 4px;
+      margin-bottom: 8px;
+      background: none;
+      border: 2px dashed #d1d5db;
+      border-radius: 6px;
+      color: #6b7280;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    .btn-add-row:hover {
+      border-color: #d97706;
+      color: #d97706;
+      background: rgba(217,119,6,0.05);
+    }
+
+    @media print {
+      .col-actions { display: none; }
+      .btn-add-row { display: none; }
+    }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
@@ -535,10 +614,10 @@
     </div>
 
     <div class="stats-bar">
-      <div class="stat-chip"><span class="stat-val">9</span><span class="stat-lbl">Morning Sessions</span></div>
-      <div class="stat-chip"><span class="stat-val">16</span><span class="stat-lbl">Afternoon Sessions</span></div>
+      <div class="stat-chip"><span class="stat-val">8</span><span class="stat-lbl">Morning Sessions</span></div>
+      <div class="stat-chip"><span class="stat-val">13</span><span class="stat-lbl">Afternoon Sessions</span></div>
       <div class="stat-chip"><span class="stat-val">9:30 AM</span><span class="stat-lbl">Start Time</span></div>
-      <div class="stat-chip"><span class="stat-val">6:30 PM</span><span class="stat-lbl">End Time</span></div>
+      <div class="stat-chip"><span class="stat-val">6:05 PM</span><span class="stat-lbl">End Time</span></div>
     </div>
 
     <!-- Morning -->
@@ -553,11 +632,13 @@
             <th class="center">Duration</th>
             <th>Speaker</th>
             <th>Topic</th>
+            <th class="col-actions"></th>
           </tr>
         </thead>
         <tbody id="day1-morning">
         </tbody>
       </table>
+      <button class="btn-add-row" onclick="addRow('day1-morning')">+ Add Session</button>
     </div>
 
     <!-- Afternoon -->
@@ -572,11 +653,13 @@
             <th class="center">Duration</th>
             <th>Speaker</th>
             <th>Topic</th>
+            <th class="col-actions"></th>
           </tr>
         </thead>
         <tbody id="day1-afternoon">
         </tbody>
       </table>
+      <button class="btn-add-row" onclick="addRow('day1-afternoon')">+ Add Session</button>
     </div>
 
   </section>
@@ -593,9 +676,9 @@
 
     <div class="stats-bar">
       <div class="stat-chip"><span class="stat-val">11</span><span class="stat-lbl">Morning Sessions</span></div>
-      <div class="stat-chip"><span class="stat-val">13</span><span class="stat-lbl">Afternoon Sessions</span></div>
+      <div class="stat-chip"><span class="stat-val">10</span><span class="stat-lbl">Afternoon Sessions</span></div>
       <div class="stat-chip"><span class="stat-val">9:45 AM</span><span class="stat-lbl">Start Time</span></div>
-      <div class="stat-chip"><span class="stat-val">5:25 PM</span><span class="stat-lbl">End Time</span></div>
+      <div class="stat-chip"><span class="stat-val">5:30 PM</span><span class="stat-lbl">End Time</span></div>
     </div>
 
     <!-- Morning -->
@@ -610,11 +693,13 @@
             <th class="center">Duration</th>
             <th>Speaker</th>
             <th>Topic</th>
+            <th class="col-actions"></th>
           </tr>
         </thead>
         <tbody id="day2-morning">
         </tbody>
       </table>
+      <button class="btn-add-row" onclick="addRow('day2-morning')">+ Add Session</button>
     </div>
 
     <!-- Afternoon -->
@@ -629,11 +714,13 @@
             <th class="center">Duration</th>
             <th>Speaker</th>
             <th>Topic</th>
+            <th class="col-actions"></th>
           </tr>
         </thead>
         <tbody id="day2-afternoon">
         </tbody>
       </table>
+      <button class="btn-add-row" onclick="addRow('day2-afternoon')">+ Add Session</button>
     </div>
 
   </section>
@@ -668,11 +755,13 @@
             <th class="center">Duration</th>
             <th>Speaker</th>
             <th>Topic</th>
+            <th class="col-actions"></th>
           </tr>
         </thead>
         <tbody id="day3-morning">
         </tbody>
       </table>
+      <button class="btn-add-row" onclick="addRow('day3-morning')">+ Add Session</button>
     </div>
 
     <!-- Afternoon -->
@@ -687,11 +776,13 @@
             <th class="center">Duration</th>
             <th>Speaker</th>
             <th>Topic</th>
+            <th class="col-actions"></th>
           </tr>
         </thead>
         <tbody id="day3-afternoon">
         </tbody>
       </table>
+      <button class="btn-add-row" onclick="addRow('day3-afternoon')">+ Add Session</button>
     </div>
 
   </section>
@@ -704,7 +795,16 @@
 
 </div>
 
+<!-- Save Toast -->
+<div class="save-toast" id="save-toast"></div>
+
 <script>
+  // ── Supabase Config ──
+  // Replace these with your Supabase project credentials
+  const SUPABASE_URL = 'https://qpsmsvogojwymqncojer.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFwc21zdm9nb2p3eW1xbmNvamVyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMxNzA1MTYsImV4cCI6MjA4ODc0NjUxNn0.6qONVZMJGdqYOj3U9l-VZmz97yonXtxjGqFev7C80bg';
+  const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
   // Password protection
   const CORRECT_PASSWORD = 'CUTTER';
   
@@ -740,71 +840,220 @@
     }
   });
 
-  // Schedule data
-  const scheduleData = {
+  // ── Save Toast ──
+  function showToast(message, type = 'saving') {
+    const toast = document.getElementById('save-toast');
+    toast.textContent = message;
+    toast.className = 'save-toast ' + type + ' show';
+    if (type === 'saved' || type === 'error') {
+      setTimeout(() => { toast.classList.remove('show'); }, 2000);
+    }
+  }
+
+  // ── Extract sessions from a single tbody ──
+  function extractSessionsFromTbody(tbody) {
+    const sessions = [];
+    if (!tbody) return sessions;
+    const rows = tbody.querySelectorAll('tr');
+    rows.forEach(row => {
+      const cells = row.querySelectorAll('td');
+      if (cells.length < 4) return;
+      const item = {
+        time: cells[0].textContent.trim(),
+        duration: (cells[1].querySelector('.dur-badge') || cells[1]).textContent.trim(),
+        speaker: cells[2].textContent.trim(),
+        topic: cells[3].textContent.trim()
+      };
+      if (row.classList.contains('row-lunch')) item.isLunch = true;
+      if (row.classList.contains('row-break')) item.isBreak = true;
+      sessions.push(item);
+    });
+    return sessions;
+  }
+
+  // ── Extract full schedule from the DOM ──
+  function extractScheduleFromDOM() {
+    const result = {};
+    for (let day = 1; day <= 3; day++) {
+      result[day] = {
+        morning: extractSessionsFromTbody(document.getElementById(`day${day}-morning`)),
+        afternoon: extractSessionsFromTbody(document.getElementById(`day${day}-afternoon`))
+      };
+    }
+    return result;
+  }
+
+  // ── Load schedule from Supabase ──
+  async function loadScheduleData() {
+    try {
+      const { data, error } = await supabaseClient
+        .from('schedule_data')
+        .select('day, period, sessions')
+        .order('day')
+        .order('period');
+
+      if (error) throw error;
+
+      // Check which day/period combos are missing
+      const existing = new Set((data || []).map(r => `${r.day}-${r.period}`));
+      const missingRows = [];
+      for (let day = 1; day <= 3; day++) {
+        ['morning', 'afternoon'].forEach(period => {
+          if (!existing.has(`${day}-${period}`)) {
+            missingRows.push({
+              day: day,
+              period: period,
+              sessions: DEFAULT_SCHEDULE_DATA[day][period],
+              updated_at: new Date().toISOString()
+            });
+          }
+        });
+      }
+
+      // Seed any missing rows
+      if (missingRows.length > 0) {
+        console.log(`Seeding ${missingRows.length} missing rows...`);
+        const { error: seedError } = await supabaseClient
+          .from('schedule_data')
+          .upsert(missingRows, { onConflict: 'day,period' });
+        if (seedError) throw seedError;
+        showToast('Database synced with defaults', 'saved');
+      }
+
+      // Reconstruct the scheduleData object — fill gaps with defaults
+      const result = {};
+      for (let day = 1; day <= 3; day++) {
+        result[day] = { morning: [], afternoon: [] };
+      }
+      (data || []).forEach(row => {
+        result[row.day][row.period] = row.sessions;
+      });
+      missingRows.forEach(row => {
+        result[row.day][row.period] = row.sessions;
+      });
+      return result;
+    } catch (err) {
+      console.error('Failed to load from Supabase:', err);
+      showToast('Offline — using defaults', 'error');
+      return DEFAULT_SCHEDULE_DATA;
+    }
+  }
+
+  // ── Save a specific day/period to Supabase ──
+  let saveTimeout = null;
+  function saveScheduleToSupabase(dayNum, period) {
+    // Debounce saves — wait 500ms after last edit
+    if (saveTimeout) clearTimeout(saveTimeout);
+    saveTimeout = setTimeout(async () => {
+      showToast('Saving...', 'saving');
+      try {
+        const tbody = document.getElementById(`day${dayNum}-${period}`);
+        const sessions = extractSessionsFromTbody(tbody);
+        const { error } = await supabaseClient
+          .from('schedule_data')
+          .upsert(
+            { day: dayNum, period: period, sessions: sessions, updated_at: new Date().toISOString() },
+            { onConflict: 'day,period' }
+          );
+
+        if (error) throw error;
+        showToast('Saved ✓', 'saved');
+      } catch (err) {
+        console.error('Save failed:', err);
+        showToast('Save failed!', 'error');
+      }
+    }, 500);
+  }
+
+  // ── Helper: find which day/period a tbody belongs to ──
+  function getTbodyDayPeriod(tbody) {
+    const id = tbody.id; // e.g. "day1-morning"
+    const match = id.match(/day(\d+)-(morning|afternoon)/);
+    if (match) return { day: parseInt(match[1]), period: match[2] };
+    return null;
+  }
+
+  // ── Delete a row ──
+  function deleteRow(btn) {
+    const row = btn.closest('tr');
+    const tbody = row.closest('tbody');
+    row.remove();
+    // Recalculate times for remaining rows
+    updateAllTimesInTbody(tbody);
+    // Auto-save to Supabase
+    const dp = getTbodyDayPeriod(tbody);
+    if (dp) saveScheduleToSupabase(dp.day, dp.period);
+  }
+
+  // ── Add a new row ──
+  function addRow(tbodyId) {
+    const tbody = document.getElementById(tbodyId);
+    const isAfternoon = tbodyId.includes('afternoon');
+    const newItem = { time: '--:--', duration: '0 min', speaker: 'New Speaker', topic: 'New Topic' };
+    const rowHtml = renderRow(newItem, isAfternoon);
+    tbody.insertAdjacentHTML('beforeend', rowHtml);
+    // Make the new row draggable
+    const newRow = tbody.lastElementChild;
+    setupDragAndDropForRow(newRow);
+    // Auto-save
+    const dp = getTbodyDayPeriod(tbody);
+    if (dp) saveScheduleToSupabase(dp.day, dp.period);
+  }
+
+  // Default schedule data (used as fallback & to seed Supabase on first run)
+  const DEFAULT_SCHEDULE_DATA = {
     1: {
       morning: [
-        { time: '9:30 AM', duration: '30 min', speaker: 'David Baker', topic: 'Greeting' },
-        { time: '10:00 AM', duration: '15 min', speaker: 'DJ Richoux', topic: 'About 3 Pillars' },
-        { time: '10:15 AM', duration: '5 min', speaker: 'DJ Richoux', topic: 'Introduce Chris' },
-        { time: '10:20 AM', duration: '10 min', speaker: 'Christian Martin', topic: '+ Virtual Ted' },
-        { time: '10:30 AM', duration: '5 min', speaker: 'Christian Martin', topic: 'Introduce Ted' },
-        { time: '10:35 AM', duration: '10 min', speaker: 'Ted Thomas', topic: 'Opening Statement' },
-        { time: '10:45 AM', duration: '40 min', speaker: 'Bob Schumacher', topic: 'About Georgia Deals' },
-        { time: '11:25 AM', duration: '5 min', speaker: 'DJ Richoux', topic: 'Introduce Drew' },
-        { time: '11:30 AM', duration: '30 min', speaker: 'Jeff Austin', topic: 'About Condo Deal' }
+        { time: '9:30 AM', duration: '30 min', speaker: 'David Baker', topic: '15 mi. of Pump Up Music + Greeting' },
+        { time: '10:00 AM', duration: '15 min', speaker: 'Bill Williams', topic: 'Intro Agenda' },
+        { time: '10:15 AM', duration: '15 min', speaker: 'Bill Williams', topic: 'Tax lien and deed overview + Intro Ted' },
+        { time: '10:30 AM', duration: '60 min', speaker: 'Ted Thomas', topic: 'Ted Thomas Presentation 45 - 60 mins' },
+        { time: '11:30 AM', duration: '5 min', speaker: 'Bill Williams', topic: 'Intro Bob' },
+        { time: '11:35 AM', duration: '45 min', speaker: 'Bob Schumacher', topic: 'Basic Presentation - Buying Tours Georgia' },
+        { time: '12:20 PM', duration: '10 min', speaker: 'Bill Williams', topic: 'Some questions to Bob and intro Chris' },
+        { time: '12:30 PM', duration: '30 min', speaker: 'Christian Martin', topic: 'Demo of current Virtual Ted' }
       ],
       afternoon: [
-        { time: '12:00 PM', duration: '5 min', speaker: 'DJ Richoux', topic: 'Introduce Bill' },
-        { time: '12:05 PM', duration: '25 min', speaker: 'Bill Williams', topic: 'About Bid Calculator' },
-        { time: '12:30 PM', duration: '60 min', speaker: 'Lunch', topic: 'Lunch + Virtual Ted Q&A', isLunch: true },
-        { time: '1:30 PM', duration: '5 min', speaker: 'DJ Richoux', topic: '1st Draw + Intro Ted' },
-        { time: '1:35 PM', duration: '60 min', speaker: 'Ted Thomas', topic: 'About Money Out of Air' },
-        { time: '2:35 PM', duration: '5 min', speaker: 'Break', topic: 'Coffee Break', isBreak: true },
-        { time: '2:40 PM', duration: '5 min', speaker: 'DJ Richoux', topic: 'Introduce Bill' },
-        { time: '2:45 PM', duration: '70 min', speaker: 'Bill Williams', topic: 'About Ana vs. Shannon' },
-        { time: '3:55 PM', duration: '10 min', speaker: 'Break', topic: 'Coffee Break', isBreak: true },
-        { time: '4:05 PM', duration: '5 min', speaker: 'DJ Richoux', topic: '2nd Draw + Intro Paul' },
-        { time: '4:10 PM', duration: '75 min', speaker: 'Paul Castillo', topic: 'About Step by Step' },
-        { time: '5:25 PM', duration: '5 min', speaker: 'Christian Martin', topic: 'Introduce DJ' },
-        { time: '5:30 PM', duration: '20 min', speaker: 'DJ Richoux', topic: 'About Buying Tours' },
-        { time: '5:30 PM', duration: '30 min', speaker: 'Paul Castillo', topic: 'About Funding' },
-        { time: '5:50 PM', duration: '5 min', speaker: 'DJ Richoux', topic: 'Introduce Paul' },
-        { time: '6:25 PM', duration: '5 min', speaker: 'DJ Richoux', topic: 'Close & Day 2 Preview' }
+        { time: '1:00 PM', duration: '60 min', speaker: 'Bill Williams', topic: 'Announce Lunch', isLunch: true },
+        { time: '2:00 PM', duration: '-', speaker: 'David Baker', topic: 'Warm up attendees for 10 mi.' },
+        { time: '2:00 PM', duration: '5 min', speaker: 'Bill Williams', topic: '1st Draw +' },
+        { time: '2:05 PM', duration: '40 min', speaker: 'Bill with Nolvin recording', topic: 'Michigan Deals Success Story' },
+        { time: '2:45 PM', duration: '5 min', speaker: 'Bill Williams', topic: 'Bill Intro Bob' },
+        { time: '2:50 PM', duration: '30 min', speaker: 'Bob Schumacher', topic: 'About his success with Judicial sales' },
+        { time: '3:20 PM', duration: '5 min', speaker: 'Bill Williams', topic: 'Intro Santiago' },
+        { time: '3:25 PM', duration: '40 min', speaker: 'Bill with Santiago', topic: 'About Success with CA MI FL' },
+        { time: '4:05 PM', duration: '5 min', speaker: 'Bill Williams', topic: 'Second Raw and Intro Paul Castillo' },
+        { time: '4:10 PM', duration: '75 min', speaker: 'Paul Castillo', topic: 'How to Buy and Sell Properties' },
+        { time: '5:25 PM', duration: '5 min', speaker: 'Bill Williams', topic: '5 min break + Paul Bonus Prez Promo', isBreak: true },
+        { time: '5:30 PM', duration: '30 min', speaker: 'Paul Castillo', topic: 'How to raise the funds for deals' },
+        { time: '6:00 PM', duration: '5 min', speaker: 'Bill Williams', topic: "Tease Saturday's speakers and Topics" }
       ]
     },
     2: {
       morning: [
-        { time: '9:45 AM', duration: '15 min', speaker: 'David Baker', topic: 'Housekeeping' },
-        { time: '10:00 AM', duration: '10 min', speaker: 'Christian Martin', topic: '3rd Draw + Magic Map' },
-        { time: '10:10 AM', duration: '5 min', speaker: 'Christian Martin', topic: 'Introduce Bob' },
-        { time: '10:15 AM', duration: '30 min', speaker: 'Bob Schumacher', topic: 'About Georgia Land Deal' },
-        { time: '10:45 AM', duration: '5 min', speaker: 'DJ Richoux', topic: 'Introduce Chris + Bill' },
-        { time: '10:50 AM', duration: '15 min', speaker: 'Christian Martin', topic: '+ Bill Max Bid Calc Review' },
-        { time: '11:05 AM', duration: '10 min', speaker: 'Bill Williams', topic: 'About Way to Wealth' },
-        { time: '11:15 AM', duration: '5 min', speaker: 'DJ Richoux', topic: 'Introduce Drew' },
-        { time: '11:20 AM', duration: '30 min', speaker: 'Jeff Austin', topic: 'About Michigan Case Study' },
-        { time: '11:50 AM', duration: '5 min', speaker: 'DJ Richoux', topic: 'Introducing Drew Again' },
-        { time: '11:55 AM', duration: '10 min', speaker: 'Jeff Austin', topic: 'About Int. Bus. Gro. System' }
+        { time: '9:45 AM', duration: '15 min', speaker: 'David Baker', topic: 'Greetings & Fun Times' },
+        { time: '10:00 AM', duration: '10 min', speaker: 'DJ Richoux', topic: '3rd Draw' },
+        { time: '10:10 AM', duration: '20 min', speaker: 'DJ Richoux', topic: 'DJ Buying Tours' },
+        { time: '10:30 AM', duration: '5 min', speaker: 'DJ Richoux', topic: 'Intro Bill about shortened comparison' },
+        { time: '10:35 AM', duration: '30 min', speaker: 'Bill Williams', topic: 'Ana vs. Shannon differentiation - Short' },
+        { time: '11:05 AM', duration: '5 min', speaker: 'DJ Richoux', topic: 'Intro Chris about Done with You Research' },
+        { time: '11:10 AM', duration: '60 min', speaker: 'Christian Martin', topic: 'Benefits and Value of Research Assistant' },
+        { time: '12:10 PM', duration: '5 min', speaker: 'DJ Richoux', topic: 'Introducing Jeff Austin' },
+        { time: '12:15 PM', duration: '30 min', speaker: 'Jeff Austin', topic: 'New York Case Study Success story' },
+        { time: '12:45 PM', duration: '15 min', speaker: 'DJ Richoux', topic: 'Trial close and Q & A via Chat' },
+        { time: '1:00 PM', duration: '60 min', speaker: 'Lunch', topic: 'David Baker Greeting again 10 mi. before', isLunch: true }
       ],
       afternoon: [
-        { time: '12:05 PM', duration: '5 min', speaker: 'DJ Richoux', topic: 'Introduce Paul' },
-        { time: '12:10 PM', duration: '10 min', speaker: 'Paul Castillo', topic: 'About Ultimate Deal' },
-        { time: '12:30 PM', duration: '5 min', speaker: 'DJ Richoux', topic: 'Summary' },
-        { time: '12:35 PM', duration: '55 min', speaker: 'Lunch', topic: 'Lunch Break', isLunch: true },
-        { time: '1:30 PM', duration: '5 min', speaker: 'DJ Richoux', topic: '4th Draw + Intro Chris' },
-        { time: '1:35 PM', duration: '15 min', speaker: 'Christian Martin', topic: 'About AI Tools & List Filter' },
-        { time: '1:50 PM', duration: '5 min', speaker: 'DJ Richoux', topic: 'Intro Marcia & Sonny + Ted' },
-        { time: '1:55 PM', duration: '30 min', speaker: 'Marcia and Sonny Hagen', topic: '& Sonny + Ted Interview' },
-        { time: '2:25 PM', duration: '5 min', speaker: 'Ted Thomas', topic: 'Introduce Paul' },
-        { time: '2:30 PM', duration: '30 min', speaker: 'Paul Castillo', topic: 'About Him vs Kelly' },
-        { time: '3:00 PM', duration: '5 min', speaker: 'DJ Richoux', topic: 'Introduce Rupi' },
-        { time: '3:05 PM', duration: '30 min', speaker: 'DJ Richoux', topic: 'About Tree House Story' },
-        { time: '3:35 PM', duration: '10 min', speaker: 'Break', topic: 'Break 10 Minutes', isBreak: true },
-        { time: '3:45 PM', duration: '5 min', speaker: 'DJ Richoux', topic: 'Intro Ted About Jim Jay' },
-        { time: '3:50 PM', duration: '60 min', speaker: 'Ted Thomas', topic: 'About Jim Jay Story' },
-        { time: '4:50 PM', duration: '30 min', speaker: 'Paul Castillo', topic: 'And DJ About Coaching' },
-        { time: '5:20 PM', duration: '5 min', speaker: 'DJ Richoux', topic: 'Close and Preview Sunday' }
+        { time: '2:00 PM', duration: '5 min', speaker: 'DJ Richoux', topic: '4th Prize Draw & Intro Paul' },
+        { time: '2:05 PM', duration: '20 min', speaker: 'Paul Castillo', topic: 'Ultimate Multiplier Deal Formula' },
+        { time: '2:25 PM', duration: '5 min', speaker: 'DJ Richoux', topic: 'DJ summary and intro Ted & the Hagens' },
+        { time: '2:30 PM', duration: '30 min', speaker: 'Marcia and Sonny Hagen', topic: 'Marcia & Sonny + with Ted Interviewing' },
+        { time: '3:00 PM', duration: '15 min', speaker: 'DJ Richoux', topic: '10 mi. break + 4th Draw + Intro Ted', isBreak: true },
+        { time: '3:15 PM', duration: '70 min', speaker: 'Ted Thomas', topic: 'About Jim Jay Story' },
+        { time: '4:25 PM', duration: '5 min', speaker: 'Ted Thomas', topic: 'Introduce & Build Paul' },
+        { time: '4:30 PM', duration: '30 min', speaker: 'Paul Castillo', topic: 'About Him vs Kelly' },
+        { time: '5:00 PM', duration: '30 min', speaker: 'Paul and DJ', topic: 'Paul & DJ present the 30K pack' },
+        { time: '5:30 PM', duration: '0 min', speaker: 'DJ RICHOUX', topic: "Tease Sunday's speakers and Topics" }
       ]
     },
     3: {
@@ -826,6 +1075,9 @@
     }
   };
 
+  // Live schedule data (loaded from Supabase or defaults)
+  let scheduleData = JSON.parse(JSON.stringify(DEFAULT_SCHEDULE_DATA));
+
   // Render table rows
   function renderRow(item, isAfternoon) {
     const rowClass = isAfternoon ? 'afternoon-row' : 'morning-row';
@@ -837,6 +1089,7 @@
         <td class="col-dur editable-cell" onclick="editField(this, 'duration')"><span class="dur-badge">${item.duration}</span></td>
         <td class="col-speaker editable-cell" onclick="editField(this, 'speaker')">${item.speaker}</td>
         <td class="col-topic editable-cell" onclick="editField(this, 'topic')" title="${item.topic}">${item.topic}</td>
+        <td class="col-actions"><button class="btn-delete" onclick="deleteRow(this)" title="Delete row">&times;</button></td>
       </tr>
     `;
   }
@@ -930,7 +1183,7 @@
     
     function saveEdit() {
       const newValue = input.value || currentValue;
-      
+
       if (fieldType === 'duration') {
         cell.innerHTML = `<span class="dur-badge">${newValue}</span>`;
         // Update subsequent times when duration changes
@@ -943,8 +1196,12 @@
           cell.title = newValue;
         }
       }
+      // Auto-save to Supabase (only the affected day/period)
+      const tbody = cell.closest('tbody');
+      const dp = getTbodyDayPeriod(tbody);
+      if (dp) saveScheduleToSupabase(dp.day, dp.period);
     }
-    
+
     input.addEventListener('blur', saveEdit);
     input.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') saveEdit();
@@ -970,55 +1227,60 @@
   // Drag and drop functionality
   let draggedRow = null;
 
+  function setupDragAndDropForRow(row) {
+    row.draggable = true;
+
+    row.addEventListener('dragstart', (e) => {
+      draggedRow = row;
+      row.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+
+    row.addEventListener('dragend', (e) => {
+      row.classList.remove('dragging');
+      document.querySelectorAll('.schedule-table tbody tr').forEach(r => {
+        r.classList.remove('drag-over');
+      });
+    });
+
+    row.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      if (row !== draggedRow) {
+        row.classList.add('drag-over');
+      }
+    });
+
+    row.addEventListener('dragleave', (e) => {
+      row.classList.remove('drag-over');
+    });
+
+    row.addEventListener('drop', (e) => {
+      e.preventDefault();
+      if (row !== draggedRow) {
+        const tbody = row.closest('tbody');
+        const allRows = Array.from(tbody.querySelectorAll('tr'));
+        const draggedIndex = allRows.indexOf(draggedRow);
+        const targetIndex = allRows.indexOf(row);
+
+        if (draggedIndex < targetIndex) {
+          row.parentNode.insertBefore(draggedRow, row.nextSibling);
+        } else {
+          row.parentNode.insertBefore(draggedRow, row);
+        }
+
+        // Update times for all rows in this tbody
+        updateAllTimesInTbody(tbody);
+        // Auto-save to Supabase (only the affected day/period)
+        const dp = getTbodyDayPeriod(tbody);
+        if (dp) saveScheduleToSupabase(dp.day, dp.period);
+      }
+    });
+  }
+
   function setupDragAndDrop() {
-    const rows = document.querySelectorAll('.schedule-table tbody tr');
-    
-    rows.forEach(row => {
-      row.draggable = true;
-      
-      row.addEventListener('dragstart', (e) => {
-        draggedRow = row;
-        row.classList.add('dragging');
-        e.dataTransfer.effectAllowed = 'move';
-      });
-      
-      row.addEventListener('dragend', (e) => {
-        row.classList.remove('dragging');
-        document.querySelectorAll('.schedule-table tbody tr').forEach(r => {
-          r.classList.remove('drag-over');
-        });
-      });
-      
-      row.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        e.dataTransfer.dropEffect = 'move';
-        if (row !== draggedRow) {
-          row.classList.add('drag-over');
-        }
-      });
-      
-      row.addEventListener('dragleave', (e) => {
-        row.classList.remove('drag-over');
-      });
-      
-      row.addEventListener('drop', (e) => {
-        e.preventDefault();
-        if (row !== draggedRow) {
-          const tbody = row.closest('tbody');
-          const allRows = Array.from(tbody.querySelectorAll('tr'));
-          const draggedIndex = allRows.indexOf(draggedRow);
-          const targetIndex = allRows.indexOf(row);
-          
-          if (draggedIndex < targetIndex) {
-            row.parentNode.insertBefore(draggedRow, row.nextSibling);
-          } else {
-            row.parentNode.insertBefore(draggedRow, row);
-          }
-          
-          // Update times for all rows in this tbody
-          updateAllTimesInTbody(tbody);
-        }
-      });
+    document.querySelectorAll('.schedule-table tbody tr').forEach(row => {
+      setupDragAndDropForRow(row);
     });
   }
 
@@ -1041,9 +1303,18 @@
     });
   }
 
-  // Initialize
-  populateTables();
-  setupDragAndDrop();
+  // Initialize — load from Supabase then render
+  async function init() {
+    try {
+      const data = await loadScheduleData();
+      scheduleData = data;
+    } catch (err) {
+      console.error('Init error, using defaults:', err);
+    }
+    populateTables();
+    setupDragAndDrop();
+  }
+  init();
 </script>
 
 </body>
