@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>3-Day Event Schedule</title>
+  <style>
+    /* ── Reset & Base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy:       #f5f7fa;
+      --navy-light: #ffffff;
+      --navy-mid:   #eff2f7;
+      --gold:       #666666;
+      --gold-dark:  #444444;
+      --teal:       #555555;
+      --teal-dark:  #333333;
+      --white:      #1f2937;
+      --gray:       #6b7280;
+      --text:       #374151;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: #ffffff;
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+    }
+
+    /* ── Top Gold Bar ── */
+    .top-bar {
+      height: 5px;
+      background: linear-gradient(90deg, #444444, #666666, #444444);
+    }
+
+    /* ── Hero Header ── */
+    .hero {
+      text-align: center;
+      padding: 48px 24px 36px;
+      background: linear-gradient(180deg, #ffffff 0%, #f3f4f6 100%);
+      border-bottom: 1px solid rgba(100,100,100,0.15);
+    }
+
+    .hero-eyebrow {
+      font-size: 0.85rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: #555555;
+      margin-bottom: 10px;
+      font-weight: 700;
+    }
+
+    .hero h1 {
+      font-size: clamp(2.2rem, 6vw, 3.5rem);
+      font-weight: 900;
+      color: #000000;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      line-height: 1.1;
+    }
+
+    .hero-sub {
+      font-size: 1.15rem;
+      color: #4b5563;
+      margin-top: 10px;
+      font-weight: 500;
+    }
+
+    /* ── Day Tab Navigation ── */
+    .day-nav {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      padding: 28px 24px 0;
+      flex-wrap: wrap;
+    }
+
+    .day-tab {
+      background: #ffffff;
+      border: 1.5px solid rgba(100,100,100,0.25);
+      border-radius: 50px;
+      padding: 10px 28px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #6b7280;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      user-select: none;
+    }
+
+    .day-tab:hover {
+      border-color: #666666;
+      color: #666666;
+    }
+
+    .day-tab.active {
+      background: #666666;
+      border-color: #666666;
+      color: #ffffff;
+    }
+
+    /* ── Main Content ── */
+    .content {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 32px 20px 60px;
+    }
+
+    /* ── Day Panel ── */
+    .day-panel { display: none; }
+    .day-panel.active { display: block; }
+
+    .day-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .day-title-block {}
+
+    .day-number {
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 900;
+      color: #000000;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      line-height: 1;
+    }
+
+    .day-name {
+      font-size: 1.1rem;
+      color: #555555;
+      font-style: italic;
+      margin-top: 4px;
+      font-weight: 600;
+    }
+
+    .day-badge {
+      background: linear-gradient(135deg, #444444, #666666);
+      color: #ffffff;
+      font-size: 0.7rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 6px 14px;
+      border-radius: 4px;
+    }
+
+    /* ── Period Section ── */
+    .period-section { margin-bottom: 32px; }
+
+    .period-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 18px;
+      border-radius: 8px 8px 0 0;
+      font-size: 0.95rem;
+      font-weight: 800;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+
+    .period-header.morning {
+      background: linear-gradient(90deg, rgba(100,100,100,0.12), rgba(100,100,100,0.06));
+      border-left: 4px solid #555555;
+      color: #444444;
+    }
+
+    .period-header.afternoon {
+      background: linear-gradient(90deg, rgba(80,80,80,0.12), rgba(80,80,80,0.06));
+      border-left: 4px solid #333333;
+      color: #333333;
+    }
+
+    .period-icon { font-size: 1.1rem; }
+
+    /* ── Schedule Table ── */
+    .schedule-table {
+      width: 100%;
+      border-collapse: collapse;
+      border-radius: 0 0 10px 10px;
+      overflow: hidden;
+    }
+
+    .schedule-table thead tr {
+      background: #eff2f7;
+    }
+
+    .schedule-table thead th {
+      padding: 12px 16px;
+      font-size: 0.8rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #374151;
+      text-align: left;
+    }
+
+    .schedule-table thead th.center { text-align: center; }
+
+    .schedule-table tbody tr {
+      border-bottom: 1px solid rgba(0,0,0,0.04);
+      transition: background 0.15s ease;
+    }
+
+    .schedule-table tbody tr:nth-child(odd)  { background: #ffffff; }
+    .schedule-table tbody tr:nth-child(even) { background: #fafbfc; }
+    .schedule-table tbody tr:hover           { background: #f0f4f8; }
+
+    .schedule-table tbody tr.morning-row {
+      border-left: 4px solid #555555;
+    }
+
+    .schedule-table tbody tr.afternoon-row {
+      border-left: 4px solid #333333;
+    }
+
+    .schedule-table td {
+      padding: 14px 16px;
+      vertical-align: middle;
+      font-size: 1.05rem;
+      color: #1a1a1a;
+    }
+
+    /* Time column */
+    .col-time {
+      font-weight: 800;
+      color: #000000;
+      white-space: nowrap;
+      min-width: 90px;
+      font-size: 1.1rem;
+    }
+
+    /* Duration badge */
+    .col-dur { text-align: center; min-width: 80px; }
+
+    .dur-badge {
+      display: inline-block;
+      background: rgba(107,114,128,0.15);
+      color: #374151;
+      font-size: 0.85rem;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
+
+    /* Speaker column */
+    .col-speaker {
+      font-weight: 800;
+      white-space: nowrap;
+      min-width: 120px;
+    }
+
+    .morning-row .col-speaker  { color: #444444; font-weight: 800; }
+    .afternoon-row .col-speaker { color: #333333; font-weight: 800; }
+
+    /* Special rows */
+    .row-break .col-speaker,
+    .row-lunch .col-speaker {
+      color: #6b7280 !important;
+      font-style: italic;
+      font-weight: 600;
+    }
+
+    .row-break td, .row-lunch td {
+      opacity: 0.85;
+    }
+
+    /* Topic column */
+    .col-topic {
+      color: #1a1a1a;
+      font-weight: 500;
+    }
+
+    /* ── Stats Bar ── */
+    .stats-bar {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+
+    .stat-chip {
+      background: #ffffff;
+      border: 1px solid rgba(100,100,100,0.1);
+      border-radius: 8px;
+      padding: 10px 18px;
+      font-size: 0.82rem;
+    }
+
+    .stat-chip .stat-val {
+      font-size: 1.5rem;
+      font-weight: 900;
+      color: #000000;
+      display: block;
+      line-height: 1;
+    }
+
+    .stat-chip .stat-lbl {
+      color: #374151;
+      font-size: 0.8rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-top: 3px;
+      font-weight: 600;
+    }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      padding: 24px;
+      font-size: 0.78rem;
+      color: rgba(107,114,128,0.6);
+      border-top: 1px solid rgba(100,100,100,0.12);
+    }
+
+    /* ── Print Styles ── */
+    @media print {
+      body { background: white; }
+      .day-nav { display: none; }
+      .day-panel { display: block !important; page-break-after: always; }
+      .top-bar { display: none; }
+      footer { display: none; }
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 600px) {
+      .schedule-table thead th:nth-child(2),
+      .schedule-table td.col-dur { display: none; }
+
+      .schedule-table td { padding: 10px 10px; font-size: 0.85rem; }
+      .col-time { min-width: 72px; }
+      .col-speaker { min-width: 80px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="top-bar"></div>
+
+<!-- Hero -->
+<header class="hero">
+  <p class="hero-eyebrow">3-Day Training Event</p>
+  <h1>Event Schedule</h1>
+  <p class="hero-sub">Friday &nbsp;·&nbsp; Saturday &nbsp;·&nbsp; Sunday</p>
+</header>
+
+<!-- Day Tab Navigation -->
+<nav class="day-nav">
+  <button class="day-tab active" onclick="showDay(1, this)">Day 1 &mdash; Friday</button>
+  <button class="day-tab"        onclick="showDay(2, this)">Day 2 &mdash; Saturday</button>
+  <button class="day-tab"        onclick="showDay(3, this)">Day 3 &mdash; Sunday</button>
+</nav>
+
+<!-- Content -->
+<main class="content">
+
+  <!-- ════════════════════════════════ DAY 1 ════════════════════════════════ -->
+  <section class="day-panel active" id="day-1">
+
+    <div class="day-header">
+      <div class="day-title-block">
+        <div class="day-number">Day 1 &mdash; Friday</div>
+        <div class="day-name">Event Schedule</div>
+      </div>
+    </div>
+
+    <div class="stats-bar">
+      <div class="stat-chip"><span class="stat-val">9</span><span class="stat-lbl">Morning Sessions</span></div>
+      <div class="stat-chip"><span class="stat-val">16</span><span class="stat-lbl">Afternoon Sessions</span></div>
+      <div class="stat-chip"><span class="stat-val">9:30 AM</span><span class="stat-lbl">Start Time</span></div>
+      <div class="stat-chip"><span class="stat-val">6:30 PM</span><span class="stat-lbl">End Time</span></div>
+    </div>
+
+    <!-- Morning -->
+    <div class="period-section">
+      <div class="period-header morning">
+        <span class="period-icon">☀️</span> Morning
+      </div>
+      <table class="schedule-table">
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th class="center">Duration</th>
+            <th>Speaker</th>
+            <th>Topic</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="morning-row"><td class="col-time">9:30 AM</td><td class="col-dur"><span class="dur-badge">30 min</span></td><td class="col-speaker">David</td><td class="col-topic">Greeting</td></tr>
+          <tr class="morning-row"><td class="col-time">10:00 AM</td><td class="col-dur"><span class="dur-badge">15 min</span></td><td class="col-speaker">DJ</td><td class="col-topic">About 3 Pillars</td></tr>
+          <tr class="morning-row"><td class="col-time">10:15 AM</td><td class="col-dur"><span class="dur-badge">5 min</span></td><td class="col-speaker">DJ</td><td class="col-topic">Introduce Chris</td></tr>
+          <tr class="morning-row"><td class="col-time">10:20 AM</td><td class="col-dur"><span class="dur-badge">10 min</span></td><td class="col-speaker">Chris</td><td class="col-topic">+ Virtual Ted</td></tr>
+          <tr class="morning-row"><td class="col-time">10:30 AM</td><td class="col-dur"><span class="dur-badge">5 min</span></td><td class="col-speaker">Chris</td><td class="col-topic">Introduce Ted</td></tr>
+          <tr class="morning-row"><td class="col-time">10:35 AM</td><td class="col-dur"><span class="dur-badge">10 min</span></td><td class="col-speaker">Ted</td><td class="col-topic">Opening Statement</td></tr>
+          <tr class="morning-row"><td class="col-time">10:45 AM</td><td class="col-dur"><span class="dur-badge">40 min</span></td><td class="col-speaker">Bob</td><td class="col-topic">About Georgia Deals</td></tr>
+          <tr class="morning-row"><td class="col-time">11:25 AM</td><td class="col-dur"><span class="dur-badge">5 min</span></td><td class="col-speaker">DJ</td><td class="col-topic">Introduce Drew</td></tr>
+          <tr class="morning-row"><td class="col-time">11:30 AM</td><td class="col-dur"><span class="dur-badge">30 min</span></td><td class="col-speaker">Drew</td><td class="col-topic">About Condo Deal</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Afternoon -->
+    <div class="period-section">
+      <div class="period-header afternoon">
+        <span class="period-icon">🌙</span> Afternoon
+      </div>
+      <table class="schedule-table">
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th class="center">Duration</th>
+            <th>Speaker</th>
+            <th>Topic</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="afternoon-row"><td class="col-time">12:00 PM</td><td class="col-dur"><span class="dur-badge">5 min</span></td><td class="col-speaker">DJ</td><td class="col-topic">Introduce Bill</td></tr>
+          <tr class="afternoon-row"><td class="col-time">12:05 PM</td><td class="col-dur"><span class="dur-badge">25 min</span></td><td class="col-speaker">Bill</td><td class="col-topic">About Bid Calculator</td></tr>
+          <tr class="afternoon-row row-lunch"><td class="col-time">12:30 PM</td><td class="col-dur"><span class="dur-badge">60 min</span></td><td class="col-speaker">Lunch</td><td class="col-topic">Lunch + Virtual Ted Q&amp;A</td></tr>
+          <tr class="afternoon-row"><td class="col-time">1:30 PM</td><td class="col-dur"><span class="dur-badge">5 min</span></td><td class="col-speaker">DJ</td><td class="col-topic">1st Draw + Intro Ted</td></tr>
+          <tr class="afternoon-row"><td class="col-time">1:35 PM</td><td class="col-dur"><span class="dur-badge">60 min</span></td><td class="col-speaker">Ted</td><td class="col-topic">About Money Out of Air</td></tr>
+          <tr class="afternoon-row row-break"><td class="col-time">2:35 PM</td><td class="col-dur"><span class="dur-badge">5 min</span></td><td class="col-speaker">Break</td><td class="col-topic">Coffee Break</td></tr>
+          <tr class="afternoon-row"><td class="col-time">2:40 PM</td><td class="col-dur"><span class="dur-badge">5 min</span></td><td class="col-speaker">DJ</td><td class="col-topic">Introduce Bill</td></tr>
+          <tr class="afternoon-row"><td class="col-time">2:45 PM</td><td class="col-dur"><span class="dur-badge">70 min</span></td><td class="col-speaker">Bill</td><td class="col-topic">About Ana vs. Shannon</td></tr>
+          <tr class="afternoon-row row-break"><td class="col-time">3:55 PM</td><td class="col-dur"><span class="dur-badge">10 min</span></td><td class="col-speaker">Break</td><td class="col-topic">Coffee Break</td></tr>
+          <tr class="afternoon-row"><td class="col-time">4:05 PM</td><td class="col-dur"><span class="dur-badge">5 min</span></td><td class="col-speaker">DJ</td><td class="col-topic">2nd Draw + Intro Paul</td></tr>
+          <tr class="afternoon-row"><td class="col-time">4:10 PM</td><td class="col-dur"><span class="dur-badge">75 min</span></td><td class="col-speaker">Paul</td><td class="col-topic">About Step by Step</td></tr>
+          <tr class="afternoon-row"><td class="col-time">5:25 PM</td><td class="col-dur"><span class="dur-badge">5 min</span></td><td class="col-speaker">Chris</td><td class="col-topic">Introduce DJ</td></tr>
+          <tr class="afternoon-row"><td class="col-time">5:30 PM</td><td class="col-dur"><span class="dur-badge">20 min</span></td><td class="col-speaker">DJ</td><td class="col-topic">About Buying Tours</td></tr>
+          <tr class="afternoon-row"><td class="col-time">5:30 PM</td><td class="col-dur"><span class="dur-badge">30 min</span></td><td class="col-speaker">Paul</td><td class="col-topic">About Funding</td></tr>
+          <tr class="afternoon-row"><td class="col-time">5:50 PM</td><td class="col-dur"><span class="dur-badge">5 min</span></td><td class="col-speaker">DJ</td><td class="col-topic">Introduce Paul</td></tr>
+          <tr class="afternoon-row"><td class="col-time">6:25 PM</td><td class="col-dur"><span class="dur-badge">5 min</span></td><td class="col-speaker">DJ</td><td class="col-topic">Close &amp; Day 2 Preview</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </section>
+
+  <!-- ════════════════════════════════ DAY 2 ════════════════════════════════ -->
+  <section class="day-panel" id="day-2">
+
+    <div class="day-header">
+      <div class="day-title-block">
+        <div class="day-number">Day 2 &mdash; Saturday</div>
+        <div class="day-name">Event Schedule</div>
+      </div>
+    </div>
+
+    <div class="stats-bar">
+      <div class="stat-chip"><span class="stat-val">11</span><span class="stat-lbl">Morning Sessions</span></div>
+      <div class="stat-chip"><span class="stat-val">13</span><span class="stat-lbl">Afternoon Sessions</span></div>
+      <div class="stat-chip"><span class="stat-val">9:45 AM</span><span class="stat-lbl">Start Time</span></div>
+      <div class="stat-chip"><span class="stat-val">5:25 PM</span><span class="stat-lbl">End Time</span></div>
+    </div>
+
+    <!-- Morning -->
+    <div class="period-section">
+      <div class="period-header morning">
+        <span class="period-icon">☀️</span> Morning
+      </div>
+      <table class="schedule-table">
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th class="center">Duration</th>
+            <th>Speaker</th>
+            <th>Topic</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="morning-row"><td class="col-time">9:45 AM</td><td class="col-dur"><span class="dur-badge">15 min</span></td><td class="col-speaker">David</td><td class="col-topic">Housekeeping</td></tr>
+          <tr class="morning-row"><td class="col-time">10:00 AM</td><td class="col-dur"><span class="dur-badge">10 min</span></td><td class="col-speaker">Chris</td><td class="col-topic">3rd Draw + Magic Map</td></tr>
+          <tr class="morning-row"><td class="col-time">10:10 AM</td><td class="col-dur"><span class="dur-badge">5 min</span></td><td class="col-speaker">Chris</td><td class="col-topic">Introduce Bob</td></tr>
+          <tr class="morning-row"><td class="col-time">10:15 AM</td><td class="col-dur"><span class="dur-badge">30 min</span></td><td class="col-speaker">Bob</td><td class="col-topic">About Georgia Land Deal</td></tr>
+          <tr class="morning-row"><td class="col-time">10:45 AM</td><td class="col-dur"><span class="dur-badge">5 min</span></td><td class="col-speaker">DJ</td><td class="col-topic">Introduce Chris + Bill</td></tr>
+          <tr class="morning-row"><td class="col-time">10:50 AM</td><td class="col-dur"><span class="dur-badge">15 min</span></td><td class="col-speaker">Chris</td><td class="col-topic">+ Bill Max Bid Calc Review</td></tr>
+          <tr class="morning-row"><td class="col-time">11:05 AM</td><td class="col-dur"><span class="dur-badge">10 min</span></td><td class="col-speaker">Bill</td><td class="col-topic">About Way to Wealth</td></tr>
+          <tr class="morning-row"><td class="col-time">11:15 AM</td><td class="col-dur"><span class="dur-badge">5 min</span></td><td class="col-speaker">DJ</td><td class="col-topic">Introduce Drew</td></tr>
+          <tr class="morning-row"><td class="col-time">11:20 AM</td><td class="col-dur"><span class="dur-badge">30 min</span></td><td class="col-speaker">Drew</td><td class="col-topic">About Michigan Case Study</td></tr>
+          <tr class="morning-row"><td class="col-time">11:50 AM</td><td class="col-dur"><span class="dur-badge">5 min</span></td><td class="col-speaker">DJ</td><td class="col-topic">Introducing Drew Again</td></tr>
+          <tr class="morning-row"><td class="col-time">11:55 AM</td><td class="col-dur"><span class="dur-badge">10 min</span></td><td class="col-speaker">Drew</td><td class="col-topic">About Int. Bus. Gro. System</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Afternoon -->
+    <div class="period-section">
+      <div class="period-header afternoon">
+        <span class="period-icon">🌙</span> Afternoon
+      </div>
+      <table class="schedule-table">
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th class="center">Duration</th>
+            <th>Speaker</th>
+            <th>Topic</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="afternoon-row"><td class="col-time">12:05 PM</td><td class="col-dur"><span class="dur-badge">5 min</span></td><td class="col-speaker">DJ</td><td class="col-topic">Introduce Paul</td></tr>
+          <tr class="afternoon-row"><td class="col-time">12:10 PM</td><td class="col-dur"><span class="dur-badge">10 min</span></td><td class="col-speaker">Paul</td><td class="col-topic">About Ultimate Deal</td></tr>
+          <tr class="afternoon-row"><td class="col-time">12:30 PM</td><td class="col-dur"><span class="dur-badge">5 min</span></td><td class="col-speaker">DJ</td><td class="col-topic">Summary</td></tr>
+          <tr class="afternoon-row row-lunch"><td class="col-time">12:35 PM</td><td class="col-dur"><span class="dur-badge">55 min</span></td><td class="col-speaker">Lunch</td><td class="col-topic">Lunch Break</td></tr>
+          <tr class="afternoon-row"><td class="col-time">1:30 PM</td><td class="col-dur"><span class="dur-badge">5 min</span></td><td class="col-speaker">DJ</td><td class="col-topic">4th Draw + Intro Chris</td></tr>
+          <tr class="afternoon-row"><td class="col-time">1:35 PM</td><td class="col-dur"><span class="dur-badge">15 min</span></td><td class="col-speaker">Chris</td><td class="col-topic">About AI Tools &amp; List Filter</td></tr>
+          <tr class="afternoon-row"><td class="col-time">1:50 PM</td><td class="col-dur"><span class="dur-badge">5 min</span></td><td class="col-speaker">DJ</td><td class="col-topic">Intro Marcia &amp; Sonny + Ted</td></tr>
+          <tr class="afternoon-row"><td class="col-time">1:55 PM</td><td class="col-dur"><span class="dur-badge">30 min</span></td><td class="col-speaker">Marcia</td><td class="col-topic">&amp; Sonny + Ted Interview</td></tr>
+          <tr class="afternoon-row"><td class="col-time">2:25 PM</td><td class="col-dur"><span class="dur-badge">5 min</span></td><td class="col-speaker">Ted</td><td class="col-topic">Introduce Paul</td></tr>
+          <tr class="afternoon-row"><td class="col-time">2:30 PM</td><td class="col-dur"><span class="dur-badge">30 min</span></td><td class="col-speaker">Paul</td><td class="col-topic">About Him vs Kelly</td></tr>
+          <tr class="afternoon-row"><td class="col-time">3:00 PM</td><td class="col-dur"><span class="dur-badge">5 min</span></td><td class="col-speaker">DJ</td><td class="col-topic">Introduce Rupi</td></tr>
+          <tr class="afternoon-row"><td class="col-time">3:05 PM</td><td class="col-dur"><span class="dur-badge">30 min</span></td><td class="col-speaker">Rupi</td><td class="col-topic">About Tree House Story</td></tr>
+          <tr class="afternoon-row row-break"><td class="col-time">3:35 PM</td><td class="col-dur"><span class="dur-badge">10 min</span></td><td class="col-speaker">Break</td><td class="col-topic">Break — 10 Minutes</td></tr>
+          <tr class="afternoon-row"><td class="col-time">3:45 PM</td><td class="col-dur"><span class="dur-badge">5 min</span></td><td class="col-speaker">DJ</td><td class="col-topic">Intro Ted About Jim Jay</td></tr>
+          <tr class="afternoon-row"><td class="col-time">3:50 PM</td><td class="col-dur"><span class="dur-badge">60 min</span></td><td class="col-speaker">Ted</td><td class="col-topic">About Jim Jay Story</td></tr>
+          <tr class="afternoon-row"><td class="col-time">4:50 PM</td><td class="col-dur"><span class="dur-badge">30 min</span></td><td class="col-speaker">Paul</td><td class="col-topic">And DJ About Coaching</td></tr>
+          <tr class="afternoon-row"><td class="col-time">5:20 PM</td><td class="col-dur"><span class="dur-badge">5 min</span></td><td class="col-speaker">DJ</td><td class="col-topic">Close and Preview Sunday</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </section>
+
+  <!-- ════════════════════════════════ DAY 3 ════════════════════════════════ -->
+  <section class="day-panel" id="day-3">
+
+    <div class="day-header">
+      <div class="day-title-block">
+        <div class="day-number">Day 3 &mdash; Sunday</div>
+        <div class="day-name">Event Schedule</div>
+      </div>
+      <span class="day-badge">Final Day</span>
+    </div>
+
+    <div class="stats-bar">
+      <div class="stat-chip"><span class="stat-val">4</span><span class="stat-lbl">Morning Sessions</span></div>
+      <div class="stat-chip"><span class="stat-val">7</span><span class="stat-lbl">Afternoon Sessions</span></div>
+      <div class="stat-chip"><span class="stat-val">9:45 AM</span><span class="stat-lbl">Start Time</span></div>
+      <div class="stat-chip"><span class="stat-val">4:30 PM</span><span class="stat-lbl">End Time</span></div>
+    </div>
+
+    <!-- Morning -->
+    <div class="period-section">
+      <div class="period-header morning">
+        <span class="period-icon">☀️</span> Morning
+      </div>
+      <table class="schedule-table">
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th class="center">Duration</th>
+            <th>Speaker</th>
+            <th>Topic</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="morning-row"><td class="col-time">9:45 AM</td><td class="col-dur"><span class="dur-badge">15 min</span></td><td class="col-speaker">David</td><td class="col-topic">Greeting &amp; Housekeeping</td></tr>
+          <tr class="morning-row"><td class="col-time">10:00 AM</td><td class="col-dur"><span class="dur-badge">25 min</span></td><td class="col-speaker">Chris</td><td class="col-topic">5th Draw &amp; Ted Thomas AI</td></tr>
+          <tr class="morning-row"><td class="col-time">10:25 AM</td><td class="col-dur"><span class="dur-badge">5 min</span></td><td class="col-speaker">Chris</td><td class="col-topic">To Intro Lee Phillips</td></tr>
+          <tr class="morning-row"><td class="col-time">10:30 AM</td><td class="col-dur"><span class="dur-badge">90 min</span></td><td class="col-speaker">Lee Phillips</td><td class="col-topic">Tax Savings Strategy</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Afternoon -->
+    <div class="period-section">
+      <div class="period-header afternoon">
+        <span class="period-icon">🌙</span> Afternoon
+      </div>
+      <table class="schedule-table">
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th class="center">Duration</th>
+            <th>Speaker</th>
+            <th>Topic</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="afternoon-row row-lunch"><td class="col-time">12:00 PM</td><td class="col-dur"><span class="dur-badge">60 min</span></td><td class="col-speaker">Lunch</td><td class="col-topic">Lunch Break</td></tr>
+          <tr class="afternoon-row"><td class="col-time">1:00 PM</td><td class="col-dur"><span class="dur-badge">5 min</span></td><td class="col-speaker">Chris</td><td class="col-topic">6th Draw + Intro Lee</td></tr>
+          <tr class="afternoon-row"><td class="col-time">1:05 PM</td><td class="col-dur"><span class="dur-badge">115 min</span></td><td class="col-speaker">Lee Phillips</td><td class="col-topic">About Protection</td></tr>
+          <tr class="afternoon-row row-break"><td class="col-time">3:00 PM</td><td class="col-dur"><span class="dur-badge">10 min</span></td><td class="col-speaker">Break</td><td class="col-topic">Break</td></tr>
+          <tr class="afternoon-row"><td class="col-time">3:10 PM</td><td class="col-dur"><span class="dur-badge">5 min</span></td><td class="col-speaker">Chris</td><td class="col-topic">Introduce Ted</td></tr>
+          <tr class="afternoon-row"><td class="col-time">3:15 PM</td><td class="col-dur"><span class="dur-badge">60 min</span></td><td class="col-speaker">Ted</td><td class="col-topic">Closing Presentation</td></tr>
+          <tr class="afternoon-row"><td class="col-time">4:15 PM</td><td class="col-dur"><span class="dur-badge">15 min</span></td><td class="col-speaker">DJ &amp; Chris</td><td class="col-topic">Closing Comments</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </section>
+
+</main>
+
+<footer>
+  <p>3-Day Training Event &nbsp;·&nbsp; Friday · Saturday · Sunday</p>
+</footer>
+
+<script>
+  function showDay(num, btn) {
+    // Hide all panels
+    document.querySelectorAll('.day-panel').forEach(p => p.classList.remove('active'));
+    // Deactivate all tabs
+    document.querySelectorAll('.day-tab').forEach(t => t.classList.remove('active'));
+    // Show selected
+    document.getElementById('day-' + num).classList.add('active');
+    btn.classList.add('active');
+    // Smooth scroll to top of content
+    document.querySelector('.content').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+</script>
+
+</body>
+</html>

@@ -303,6 +303,16 @@
     .schedule-table tbody tr {
       border-bottom: 1px solid rgba(0,0,0,0.04);
       transition: background 0.15s ease;
+      cursor: grab;
+    }
+
+    .schedule-table tbody tr.dragging {
+      opacity: 0.5;
+      background: rgba(217,119,6,0.1) !important;
+    }
+
+    .schedule-table tbody tr.drag-over {
+      border-top: 3px solid #d97706;
     }
 
     .schedule-table tbody tr:nth-child(odd)  { background: #ffffff; }
@@ -842,6 +852,57 @@
     }
   }
 
+  // Parse time string to minutes since midnight
+  function timeToMinutes(timeStr) {
+    const [time, period] = timeStr.split(' ');
+    let [hours, minutes] = time.split(':').map(Number);
+    if (period === 'PM' && hours !== 12) hours += 12;
+    if (period === 'AM' && hours === 12) hours = 0;
+    return hours * 60 + minutes;
+  }
+
+  // Convert minutes since midnight to time string
+  function minutesToTime(mins) {
+    let hours = Math.floor(mins / 60);
+    let minutes = mins % 60;
+    const period = hours >= 12 ? 'PM' : 'AM';
+    if (hours > 12) hours -= 12;
+    if (hours === 0) hours = 12;
+    return `${hours}:${String(minutes).padStart(2, '0')} ${period}`;
+  }
+
+  // Parse duration string to minutes
+  function durationToMinutes(durationStr) {
+    const match = durationStr.match(/(\d+)\s*min/);
+    return match ? parseInt(match[1]) : 0;
+  }
+
+  // Update subsequent times when duration changes
+  function updateSubsequentTimes(row, tbody) {
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+    const currentIndex = rows.indexOf(row);
+    
+    if (currentIndex === -1 || currentIndex === rows.length - 1) return;
+    
+    const currentTimeCell = row.querySelector('.col-time');
+    const currentDurationCell = row.querySelector('.col-dur');
+    
+    const currentTime = timeToMinutes(currentTimeCell.textContent);
+    const currentDuration = durationToMinutes(currentDurationCell.textContent);
+    let nextTime = currentTime + currentDuration;
+    
+    // Update all subsequent rows
+    for (let i = currentIndex + 1; i < rows.length; i++) {
+      const nextRow = rows[i];
+      const nextTimeCell = nextRow.querySelector('.col-time');
+      const nextDurationCell = nextRow.querySelector('.col-dur');
+      
+      nextTimeCell.textContent = minutesToTime(nextTime);
+      const nextDuration = durationToMinutes(nextDurationCell.textContent);
+      nextTime += nextDuration;
+    }
+  }
+
   // Edit field
   function editField(cell, fieldType) {
     if (cell.querySelector('input')) return;
@@ -872,6 +933,10 @@
       
       if (fieldType === 'duration') {
         cell.innerHTML = `<span class="dur-badge">${newValue}</span>`;
+        // Update subsequent times when duration changes
+        const row = cell.closest('tr');
+        const tbody = row.closest('tbody');
+        updateSubsequentTimes(row, tbody);
       } else {
         cell.textContent = newValue;
         if (fieldType === 'topic') {
@@ -902,8 +967,83 @@
     document.querySelector('.content').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
+  // Drag and drop functionality
+  let draggedRow = null;
+
+  function setupDragAndDrop() {
+    const rows = document.querySelectorAll('.schedule-table tbody tr');
+    
+    rows.forEach(row => {
+      row.draggable = true;
+      
+      row.addEventListener('dragstart', (e) => {
+        draggedRow = row;
+        row.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+      });
+      
+      row.addEventListener('dragend', (e) => {
+        row.classList.remove('dragging');
+        document.querySelectorAll('.schedule-table tbody tr').forEach(r => {
+          r.classList.remove('drag-over');
+        });
+      });
+      
+      row.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        if (row !== draggedRow) {
+          row.classList.add('drag-over');
+        }
+      });
+      
+      row.addEventListener('dragleave', (e) => {
+        row.classList.remove('drag-over');
+      });
+      
+      row.addEventListener('drop', (e) => {
+        e.preventDefault();
+        if (row !== draggedRow) {
+          const tbody = row.closest('tbody');
+          const allRows = Array.from(tbody.querySelectorAll('tr'));
+          const draggedIndex = allRows.indexOf(draggedRow);
+          const targetIndex = allRows.indexOf(row);
+          
+          if (draggedIndex < targetIndex) {
+            row.parentNode.insertBefore(draggedRow, row.nextSibling);
+          } else {
+            row.parentNode.insertBefore(draggedRow, row);
+          }
+          
+          // Update times for all rows in this tbody
+          updateAllTimesInTbody(tbody);
+        }
+      });
+    });
+  }
+
+  // Update all times in a tbody based on first row
+  function updateAllTimesInTbody(tbody) {
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+    if (rows.length === 0) return;
+    
+    let currentTime = timeToMinutes(rows[0].querySelector('.col-time').textContent);
+    
+    rows.forEach((row, index) => {
+      if (index > 0) {
+        const timeCell = row.querySelector('.col-time');
+        timeCell.textContent = minutesToTime(currentTime);
+      }
+      
+      const durationCell = row.querySelector('.col-dur');
+      const duration = durationToMinutes(durationCell.textContent);
+      currentTime += duration;
+    });
+  }
+
   // Initialize
   populateTables();
+  setupDragAndDrop();
 </script>
 
 </body>
