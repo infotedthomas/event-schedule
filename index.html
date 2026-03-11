@@ -459,39 +459,39 @@
     }
 
     /* ── Print Styles ── */
+    /* ── Print Layout ── */
+    @page { margin: 10mm 12mm; }
+
     @media print {
       body { background: white; font-size: 9pt; }
-      #password-screen { display: none; }
-      .day-nav { display: none; }
-      .top-bar { display: none; }
-      footer { display: none; }
-      .hero { padding: 12px 10px 8px; }
-      .hero h1 { font-size: 1.4rem; }
-      .hero-eyebrow, .hero-sub { font-size: 0.7rem; }
-      .col-actions { display: none; }
-      .btn-add-row { display: none; }
-      .save-toast { display: none; }
 
-      /* Show all days, each on its own page */
-      .day-panel { display: block !important; }
-      .day-panel { page-break-before: always; }
+      /* Hide UI-only elements */
+      #password-screen, .day-nav, .top-bar, footer,
+      .hero, .stats-bar, .col-actions, .btn-add-row,
+      .btn-print, .save-toast { display: none !important; }
+
+      /* Show all days, each starting on its own page */
+      .day-panel { display: block !important; page-break-before: always; }
       .day-panel:first-child { page-break-before: avoid; }
 
-      /* Keep morning & afternoon of the same day together — never split */
-      .period-section { break-inside: avoid; }
+      /* Glue day header to first period section */
+      .day-header { page-break-after: avoid; }
 
-      /* Don't break inside a table either */
+      /* Keep period header attached to its table */
+      .period-header { break-after: avoid; }
+
+      /* Never break inside a table or a row */
       .schedule-table { break-inside: avoid; }
       .schedule-table tbody tr { break-inside: avoid; }
 
-      /* Compact spacing for print */
-      .content { padding: 8px 10px; }
+      /* Force table to fit page width — allow topic text to wrap */
+      .schedule-table { width: 100% !important; }
+      .col-topic { white-space: normal !important; word-break: break-word; }
+
+      /* Compact spacing */
+      .content { padding: 8px 10px; max-width: none; }
       .day-header { margin-bottom: 8px; }
       .day-number { font-size: 1.2rem; }
-      .stats-bar { margin-bottom: 8px; gap: 8px; }
-      .stat-chip { padding: 4px 8px; }
-      .stat-chip .stat-val { font-size: 1rem; }
-      .stat-chip .stat-lbl { font-size: 0.6rem; }
       .period-section { margin-bottom: 10px; }
       .period-header { padding: 4px 10px; font-size: 0.7rem; }
       .schedule-table td { padding: 4px 8px; font-size: 0.75rem; }
@@ -589,6 +589,23 @@
       background: rgba(217,119,6,0.05);
     }
 
+    /* ── Print Button ── */
+    .btn-print {
+      display: inline-block;
+      margin-top: 16px;
+      padding: 10px 24px;
+      background: #d97706;
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s;
+      letter-spacing: 0.03em;
+    }
+    .btn-print:hover { background: #b45309; }
+
   </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -617,6 +634,7 @@
   <p class="hero-eyebrow">3-Day Training Event</p>
   <h1>Event Schedule</h1>
   <p class="hero-sub">Friday &nbsp;·&nbsp; Saturday &nbsp;·&nbsp; Sunday</p>
+  <button class="btn-print" onclick="window.print()">Print Schedule</button>
 </header>
 
 <!-- Day Tab Navigation -->
