@@ -484,9 +484,12 @@
       .schedule-table { break-inside: avoid; }
       .schedule-table tbody tr { break-inside: avoid; }
 
-      /* Force table to fit page width — allow topic text to wrap */
+      /* Force table to fit page width — allow text to wrap */
       .schedule-table { width: 100% !important; }
       .col-topic { white-space: normal !important; word-break: break-word; }
+      .col-recording { white-space: normal !important; }
+      .col-recording a { color: #1a1a1a; text-decoration: underline; }
+      .recording-placeholder { display: none; }
 
       /* Compact spacing */
       .content { padding: 8px 10px; max-width: none; }
@@ -547,6 +550,54 @@
 
     .save-toast.error {
       background: #dc2626;
+    }
+
+    /* ── Recording / Link Column ── */
+    .col-recording {
+      white-space: nowrap;
+      min-width: 100px;
+    }
+
+    .col-recording a {
+      color: #2563eb;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .col-recording a:hover {
+      text-decoration: underline;
+      color: #1d4ed8;
+    }
+
+    .recording-placeholder {
+      color: #9ca3af;
+      font-style: italic;
+      font-size: 0.85rem;
+    }
+
+    /* Link edit form (two stacked inputs) */
+    .link-edit-form {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .link-edit-form input {
+      width: 100%;
+      border: 2px solid #d97706;
+      border-radius: 3px;
+      padding: 3px 6px;
+      font-size: 0.85rem;
+      font-family: inherit;
+    }
+    .link-edit-form input:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(217,119,6,0.2);
+    }
+    .link-edit-form label {
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
 
     /* ── Actions Column ── */
@@ -676,6 +727,7 @@
             <th class="center">Duration</th>
             <th>Speaker</th>
             <th>Topic</th>
+            <th>Recording</th>
             <th class="col-actions"></th>
           </tr>
         </thead>
@@ -697,6 +749,7 @@
             <th class="center">Duration</th>
             <th>Speaker</th>
             <th>Topic</th>
+            <th>Recording</th>
             <th class="col-actions"></th>
           </tr>
         </thead>
@@ -737,6 +790,7 @@
             <th class="center">Duration</th>
             <th>Speaker</th>
             <th>Topic</th>
+            <th>Recording</th>
             <th class="col-actions"></th>
           </tr>
         </thead>
@@ -758,6 +812,7 @@
             <th class="center">Duration</th>
             <th>Speaker</th>
             <th>Topic</th>
+            <th>Recording</th>
             <th class="col-actions"></th>
           </tr>
         </thead>
@@ -799,6 +854,7 @@
             <th class="center">Duration</th>
             <th>Speaker</th>
             <th>Topic</th>
+            <th>Recording</th>
             <th class="col-actions"></th>
           </tr>
         </thead>
@@ -820,6 +876,7 @@
             <th class="center">Duration</th>
             <th>Speaker</th>
             <th>Topic</th>
+            <th>Recording</th>
             <th class="col-actions"></th>
           </tr>
         </thead>
@@ -908,6 +965,20 @@
         speaker: cells[2].textContent.trim(),
         topic: cells[3].textContent.trim()
       };
+      // Extract recording link data (cell index 4)
+      if (cells.length > 4) {
+        const recCell = cells[4];
+        const linkEl = recCell.querySelector('a');
+        if (linkEl) {
+          item.linkTitle = linkEl.textContent.trim();
+          item.linkUrl = linkEl.getAttribute('href') || '';
+        } else {
+          const placeholder = recCell.querySelector('.recording-placeholder');
+          const text = placeholder ? placeholder.textContent.trim() : recCell.textContent.trim();
+          item.linkTitle = (text === 'Add link') ? '' : text;
+          item.linkUrl = '';
+        }
+      }
       if (row.classList.contains('row-lunch')) item.isLunch = true;
       if (row.classList.contains('row-break')) item.isBreak = true;
       sessions.push(item);
@@ -1033,7 +1104,7 @@
   function addRow(tbodyId) {
     const tbody = document.getElementById(tbodyId);
     const isAfternoon = tbodyId.includes('afternoon');
-    const newItem = { time: '--:--', duration: '0 min', speaker: 'New Speaker', topic: 'New Topic' };
+    const newItem = { time: '--:--', duration: '0 min', speaker: 'New Speaker', topic: 'New Topic', linkTitle: '', linkUrl: '' };
     const rowHtml = renderRow(newItem, isAfternoon);
     tbody.insertAdjacentHTML('beforeend', rowHtml);
     // Make the new row draggable
@@ -1126,13 +1197,24 @@
   function renderRow(item, isAfternoon) {
     const rowClass = isAfternoon ? 'afternoon-row' : 'morning-row';
     const specialClass = item.isLunch ? 'row-lunch' : item.isBreak ? 'row-break' : '';
-    
+    const linkTitle = item.linkTitle || '';
+    const linkUrl = item.linkUrl || '';
+    let linkContent;
+    if (linkUrl) {
+      linkContent = `<a href="${linkUrl}" target="_blank" title="${linkUrl}">${linkTitle || 'Link'}</a>`;
+    } else if (linkTitle) {
+      linkContent = `<span class="recording-placeholder">${linkTitle}</span>`;
+    } else {
+      linkContent = `<span class="recording-placeholder">Add link</span>`;
+    }
+
     return `
       <tr class="${rowClass} ${specialClass}">
         <td class="col-time editable-cell" onclick="editField(this, 'time')">${item.time}</td>
         <td class="col-dur editable-cell" onclick="editField(this, 'duration')"><span class="dur-badge">${item.duration}</span></td>
         <td class="col-speaker editable-cell" onclick="editField(this, 'speaker')">${item.speaker}</td>
         <td class="col-topic editable-cell" onclick="editField(this, 'topic')" title="${item.topic}">${item.topic}</td>
+        <td class="col-recording" onclick="editLink(this)">${linkContent}</td>
         <td class="col-actions"><button class="btn-delete" onclick="deleteRow(this)" title="Delete row">&times;</button></td>
       </tr>
     `;
@@ -1256,6 +1338,86 @@
           cell.textContent = currentValue;
         }
       }
+    });
+  }
+
+  // Edit recording link (title + URL)
+  function editLink(cell) {
+    if (cell.querySelector('.link-edit-form')) return; // already editing
+
+    // Get current values
+    const linkEl = cell.querySelector('a');
+    const currentTitle = linkEl ? linkEl.textContent.trim() : '';
+    const currentUrl = linkEl ? (linkEl.getAttribute('href') || '') : '';
+
+    // Build mini form with two inputs
+    const form = document.createElement('div');
+    form.className = 'link-edit-form';
+    form.innerHTML = `
+      <label>Title</label>
+      <input type="text" class="link-title-input" value="${currentTitle}" placeholder="e.g. Session Recording" maxlength="60" />
+      <label>URL</label>
+      <input type="url" class="link-url-input" value="${currentUrl}" placeholder="https://drive.google.com/..." maxlength="500" />
+    `;
+
+    cell.innerHTML = '';
+    cell.appendChild(form);
+
+    const titleInput = form.querySelector('.link-title-input');
+    const urlInput = form.querySelector('.link-url-input');
+    titleInput.focus();
+    titleInput.select();
+
+    let saved = false;
+    function saveLink() {
+      if (saved) return;
+      saved = true;
+      const newTitle = titleInput.value.trim();
+      const newUrl = urlInput.value.trim();
+
+      if (newUrl) {
+        cell.innerHTML = `<a href="${newUrl}" target="_blank" title="${newUrl}">${newTitle || 'Link'}</a>`;
+      } else if (newTitle) {
+        cell.innerHTML = `<span class="recording-placeholder">${newTitle}</span>`;
+      } else {
+        cell.innerHTML = `<span class="recording-placeholder">Add link</span>`;
+      }
+
+      // Auto-save to Supabase
+      const tbody = cell.closest('tbody');
+      const dp = getTbodyDayPeriod(tbody);
+      if (dp) saveScheduleToSupabase(dp.day, dp.period);
+    }
+
+    function cancelEdit() {
+      if (currentUrl) {
+        cell.innerHTML = `<a href="${currentUrl}" target="_blank" title="${currentUrl}">${currentTitle || 'Link'}</a>`;
+      } else if (currentTitle) {
+        cell.innerHTML = `<span class="recording-placeholder">${currentTitle}</span>`;
+      } else {
+        cell.innerHTML = `<span class="recording-placeholder">Add link</span>`;
+      }
+    }
+
+    // Save on blur (when clicking outside the form)
+    form.addEventListener('focusout', (e) => {
+      // Only save if focus left the entire form (not just switching between inputs)
+      setTimeout(() => {
+        if (!form.contains(document.activeElement)) {
+          saveLink();
+        }
+      }, 0);
+    });
+
+    // Keyboard: Enter saves, Escape cancels, Tab moves between fields
+    titleInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { urlInput.focus(); e.preventDefault(); }
+      if (e.key === 'Escape') cancelEdit();
+    });
+
+    urlInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') saveLink();
+      if (e.key === 'Escape') cancelEdit();
     });
   }
 
