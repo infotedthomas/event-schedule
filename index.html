@@ -209,12 +209,8 @@
     .day-panel.active { display: block; }
 
     .day-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      text-align: center;
       margin-bottom: 28px;
-      flex-wrap: wrap;
-      gap: 12px;
     }
 
     .day-title-block {}
@@ -419,6 +415,7 @@
     /* ── Stats Bar ── */
     .stats-bar {
       display: flex;
+      justify-content: center;
       gap: 20px;
       flex-wrap: wrap;
       margin-bottom: 24px;
@@ -467,7 +464,7 @@
 
       /* Hide UI-only elements */
       #password-screen, .day-nav, .top-bar, footer,
-      .hero, .stats-bar, .col-actions, .btn-add-row,
+      .hero, .col-actions, .btn-add-row,
       .btn-print, .save-toast { display: none !important; }
 
       /* Show all days, each starting on its own page */
@@ -493,8 +490,12 @@
 
       /* Compact spacing */
       .content { padding: 8px 10px; max-width: none; }
-      .day-header { margin-bottom: 8px; }
+      .day-header { margin-bottom: 4px; }
       .day-number { font-size: 1.2rem; }
+      .stats-bar { margin-bottom: 6px; gap: 6px; }
+      .stat-chip { padding: 3px 8px; }
+      .stat-chip .stat-val { font-size: 0.85rem; }
+      .stat-chip .stat-lbl { font-size: 0.55rem; }
       .period-section { margin-bottom: 10px; }
       .period-header { padding: 4px 10px; font-size: 0.7rem; }
       .schedule-table td { padding: 4px 8px; font-size: 0.75rem; }
@@ -709,10 +710,9 @@
     </div>
 
     <div class="stats-bar">
-      <div class="stat-chip"><span class="stat-val">8</span><span class="stat-lbl">Morning Sessions</span></div>
-      <div class="stat-chip"><span class="stat-val">13</span><span class="stat-lbl">Afternoon Sessions</span></div>
-      <div class="stat-chip"><span class="stat-val">9:30 AM</span><span class="stat-lbl">Start Time</span></div>
-      <div class="stat-chip"><span class="stat-val">6:05 PM</span><span class="stat-lbl">End Time</span></div>
+      <div class="stat-chip"><span class="stat-val">10:00 AM</span><span class="stat-lbl">Start Time</span></div>
+      <div class="stat-chip"><span class="stat-val">6:00 PM</span><span class="stat-lbl">End Time</span></div>
+      <div class="stat-chip stat-modified"><span class="stat-val" id="last-modified-1">--</span><span class="stat-lbl">Last Modified (ET)</span></div>
     </div>
 
     <!-- Morning -->
@@ -772,10 +772,9 @@
     </div>
 
     <div class="stats-bar">
-      <div class="stat-chip"><span class="stat-val">11</span><span class="stat-lbl">Morning Sessions</span></div>
-      <div class="stat-chip"><span class="stat-val">10</span><span class="stat-lbl">Afternoon Sessions</span></div>
-      <div class="stat-chip"><span class="stat-val">9:45 AM</span><span class="stat-lbl">Start Time</span></div>
-      <div class="stat-chip"><span class="stat-val">5:30 PM</span><span class="stat-lbl">End Time</span></div>
+      <div class="stat-chip"><span class="stat-val">10:00 AM</span><span class="stat-lbl">Start Time</span></div>
+      <div class="stat-chip"><span class="stat-val">6:00 PM</span><span class="stat-lbl">End Time</span></div>
+      <div class="stat-chip stat-modified"><span class="stat-val" id="last-modified-2">--</span><span class="stat-lbl">Last Modified (ET)</span></div>
     </div>
 
     <!-- Morning -->
@@ -836,10 +835,9 @@
     </div>
 
     <div class="stats-bar">
-      <div class="stat-chip"><span class="stat-val">4</span><span class="stat-lbl">Morning Sessions</span></div>
-      <div class="stat-chip"><span class="stat-val">7</span><span class="stat-lbl">Afternoon Sessions</span></div>
-      <div class="stat-chip"><span class="stat-val">9:45 AM</span><span class="stat-lbl">Start Time</span></div>
-      <div class="stat-chip"><span class="stat-val">4:30 PM</span><span class="stat-lbl">End Time</span></div>
+      <div class="stat-chip"><span class="stat-val">10:00 AM</span><span class="stat-lbl">Start Time</span></div>
+      <div class="stat-chip"><span class="stat-val">5:00 PM</span><span class="stat-lbl">End Time</span></div>
+      <div class="stat-chip stat-modified"><span class="stat-val" id="last-modified-3">--</span><span class="stat-lbl">Last Modified (ET)</span></div>
     </div>
 
     <!-- Morning -->
@@ -951,6 +949,27 @@
     }
   }
 
+  // ── Format timestamp to US Eastern time ──
+  function formatEasternTime(isoString) {
+    if (!isoString) return '--';
+    const date = new Date(isoString);
+    return date.toLocaleString('en-US', {
+      timeZone: 'America/New_York',
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    }) + ' ET';
+  }
+
+  // ── Update the last modified display for a day ──
+  function updateLastModified(dayNum, isoString) {
+    const el = document.getElementById(`last-modified-${dayNum}`);
+    if (el) el.textContent = formatEasternTime(isoString);
+  }
+
   // ── Extract sessions from a single tbody ──
   function extractSessionsFromTbody(tbody) {
     const sessions = [];
@@ -1003,7 +1022,7 @@
     try {
       const { data, error } = await supabaseClient
         .from('schedule_data')
-        .select('day, period, sessions')
+        .select('day, period, sessions, updated_at')
         .order('day')
         .order('period');
 
@@ -1040,12 +1059,24 @@
       for (let day = 1; day <= 3; day++) {
         result[day] = { morning: [], afternoon: [] };
       }
+      // Track latest updated_at per day (take the most recent of morning/afternoon)
+      const latestPerDay = {};
       (data || []).forEach(row => {
         result[row.day][row.period] = row.sessions;
+        if (!latestPerDay[row.day] || row.updated_at > latestPerDay[row.day]) {
+          latestPerDay[row.day] = row.updated_at;
+        }
       });
       missingRows.forEach(row => {
         result[row.day][row.period] = row.sessions;
+        if (!latestPerDay[row.day] || row.updated_at > latestPerDay[row.day]) {
+          latestPerDay[row.day] = row.updated_at;
+        }
       });
+      // Display last modified timestamps
+      for (let day = 1; day <= 3; day++) {
+        updateLastModified(day, latestPerDay[day]);
+      }
       return result;
     } catch (err) {
       console.error('Failed to load from Supabase:', err);
@@ -1064,14 +1095,16 @@
       try {
         const tbody = document.getElementById(`day${dayNum}-${period}`);
         const sessions = extractSessionsFromTbody(tbody);
+        const now = new Date().toISOString();
         const { error } = await supabaseClient
           .from('schedule_data')
           .upsert(
-            { day: dayNum, period: period, sessions: sessions, updated_at: new Date().toISOString() },
+            { day: dayNum, period: period, sessions: sessions, updated_at: now },
             { onConflict: 'day,period' }
           );
 
         if (error) throw error;
+        updateLastModified(dayNum, now);
         showToast('Saved ✓', 'saved');
       } catch (err) {
         console.error('Save failed:', err);
