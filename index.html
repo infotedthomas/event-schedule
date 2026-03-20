@@ -601,6 +601,15 @@
       letter-spacing: 0.05em;
     }
 
+    /* ── Read-Only Mode ── */
+    body.read-only .btn-add-row { display: none; }
+    body.read-only .btn-delete { display: none; }
+    body.read-only .col-actions { display: none; }
+    body.read-only .editable-cell { cursor: default; }
+    body.read-only .editable-cell:hover { background: none; }
+    body.read-only .col-recording { cursor: default; }
+    body.read-only .schedule-table tbody tr { cursor: default; }
+
     /* ── Actions Column ── */
     .col-actions { width: 40px; text-align: center; padding: 4px !important; }
 
@@ -904,8 +913,12 @@
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im54b2N2d2R2ZXF2enJuZ2h2d3hrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2Nzg2MjQsImV4cCI6MjA4OTI1NDYyNH0.wh1-XDjEgF6_pReM2deqjOomYrUJX7oFp0HxuUhLgx0';
   const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+  // Read-only mode — disables all editing, drag-and-drop, add/delete
+  const READ_ONLY = true;
+  if (READ_ONLY) document.body.classList.add('read-only');
+
   // Password protection
-  const CORRECT_PASSWORD = 'CUTTER';
+  const CORRECT_PASSWORD = 'virtual';
   
   function checkPassword() {
     const input = document.getElementById('password-input');
@@ -1123,6 +1136,7 @@
 
   // ── Delete a row ──
   function deleteRow(btn) {
+    if (READ_ONLY) return;
     const row = btn.closest('tr');
     const tbody = row.closest('tbody');
     row.remove();
@@ -1135,6 +1149,7 @@
 
   // ── Add a new row ──
   function addRow(tbodyId) {
+    if (READ_ONLY) return;
     const tbody = document.getElementById(tbodyId);
     const isAfternoon = tbodyId.includes('afternoon');
     const newItem = { time: '--:--', duration: '0 min', speaker: 'New Speaker', topic: 'New Topic', linkTitle: '', linkUrl: '' };
@@ -1317,6 +1332,7 @@
 
   // Edit field
   function editField(cell, fieldType) {
+    if (READ_ONLY) return;
     if (cell.querySelector('input')) return;
     
     const currentValue = fieldType === 'duration' ? cell.querySelector('.dur-badge').textContent : cell.textContent;
@@ -1376,6 +1392,7 @@
 
   // Edit recording link (title + URL)
   function editLink(cell) {
+    if (READ_ONLY) return;
     if (cell.querySelector('.link-edit-form')) return; // already editing
 
     // Get current values
@@ -1551,7 +1568,7 @@
       console.error('Init error, using defaults:', err);
     }
     populateTables();
-    setupDragAndDrop();
+    if (!READ_ONLY) setupDragAndDrop();
   }
   init();
 </script>
