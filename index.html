@@ -465,7 +465,7 @@
       /* Hide UI-only elements */
       #password-screen, .day-nav, .top-bar, footer,
       .hero, .col-actions, .btn-add-row,
-      .btn-print, .save-toast { display: none !important; }
+      .btn-print, .btn-upload-open, .save-toast { display: none !important; }
 
       /* Show all days, each starting on its own page */
       .day-panel { display: block !important; page-break-before: always; }
@@ -484,9 +484,10 @@
       /* Force table to fit page width — allow text to wrap */
       .schedule-table { width: 100% !important; }
       .col-topic { white-space: normal !important; word-break: break-word; }
-      .col-recording { white-space: normal !important; }
-      .col-recording a { color: #1a1a1a; text-decoration: underline; }
-      .recording-placeholder { display: none; }
+      .col-files { white-space: normal !important; }
+      .col-files .file-link { color: #1a1a1a; text-decoration: underline; }
+      .col-files .file-link.empty { display: none; }
+      .upload-modal-overlay { display: none !important; }
 
       /* Compact spacing */
       .content { padding: 8px 10px; max-width: none; }
@@ -553,53 +554,173 @@
       background: #dc2626;
     }
 
-    /* ── Recording / Link Column ── */
-    .col-recording {
+    /* ── Files Column ── */
+    .col-files {
       white-space: nowrap;
-      min-width: 100px;
+      min-width: 150px;
     }
 
-    .col-recording a {
+    .file-links {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .file-link {
       color: #2563eb;
       text-decoration: none;
       font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: rgba(37,99,235,0.08);
+      transition: all 0.15s;
     }
-    .col-recording a:hover {
-      text-decoration: underline;
-      color: #1d4ed8;
-    }
+    .file-link:hover { text-decoration: underline; color: #1d4ed8; background: rgba(37,99,235,0.15); }
 
-    .recording-placeholder {
+    .file-link.empty {
       color: #9ca3af;
       font-style: italic;
-      font-size: 0.85rem;
+      font-weight: 400;
+      background: none;
+      cursor: default;
+    }
+    .file-link.empty:hover { text-decoration: none; color: #9ca3af; background: none; }
+
+    .file-separator {
+      color: #d1d5db;
+      font-size: 0.8rem;
+      user-select: none;
     }
 
-    /* Link edit form (two stacked inputs) */
-    .link-edit-form {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
+    .btn-upload-open {
+      background: none;
+      border: 1.5px solid #d97706;
+      color: #d97706;
+      cursor: pointer;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-left: 4px;
+      transition: all 0.15s;
+      white-space: nowrap;
     }
-    .link-edit-form input {
+    .btn-upload-open:hover {
+      background: #d97706;
+      color: white;
+    }
+
+    /* ── Upload Modal ── */
+    .upload-modal-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 10001;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+    }
+    .upload-modal-overlay.show {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .upload-modal {
+      background: white;
+      border-radius: 12px;
+      padding: 28px 32px;
+      max-width: 460px;
+      width: 90%;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+
+    .upload-modal h3 {
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: #1f2937;
+      margin-bottom: 20px;
+    }
+
+    .upload-section {
+      margin-bottom: 18px;
+      padding: 14px 16px;
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+    }
+
+    .upload-section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .upload-section-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #374151;
+    }
+
+    .upload-section .current-file {
+      font-size: 0.8rem;
+      color: #2563eb;
+      text-decoration: none;
+    }
+    .upload-section .current-file:hover { text-decoration: underline; }
+
+    .upload-section input[type="file"] {
       width: 100%;
-      border: 2px solid #d97706;
-      border-radius: 3px;
-      padding: 3px 6px;
       font-size: 0.85rem;
       font-family: inherit;
+      margin-bottom: 8px;
     }
-    .link-edit-form input:focus {
-      outline: none;
-      box-shadow: 0 0 0 3px rgba(217,119,6,0.2);
-    }
-    .link-edit-form label {
-      font-size: 0.65rem;
+
+    .upload-btn {
+      padding: 6px 16px;
+      background: #d97706;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.82rem;
       font-weight: 700;
-      color: #6b7280;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
+      cursor: pointer;
+      transition: background 0.2s;
     }
+    .upload-btn:hover { background: #b45309; }
+    .upload-btn:disabled { background: #9ca3af; cursor: not-allowed; }
+
+    .upload-status {
+      font-size: 0.8rem;
+      margin-top: 6px;
+      font-weight: 600;
+    }
+    .upload-status.success { color: #059669; }
+    .upload-status.error { color: #dc2626; }
+    .upload-status.uploading { color: #d97706; }
+
+    .modal-close-btn {
+      display: block;
+      width: 100%;
+      padding: 10px;
+      margin-top: 4px;
+      background: #f3f4f6;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #374151;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .modal-close-btn:hover { background: #e5e7eb; }
 
     /* ── Actions Column ── */
     .col-actions { width: 40px; text-align: center; padding: 4px !important; }
@@ -727,7 +848,7 @@
             <th class="center">Duration</th>
             <th>Speaker</th>
             <th>Topic</th>
-            <th>Recording</th>
+            <th>Files</th>
             <th class="col-actions"></th>
           </tr>
         </thead>
@@ -749,7 +870,7 @@
             <th class="center">Duration</th>
             <th>Speaker</th>
             <th>Topic</th>
-            <th>Recording</th>
+            <th>Files</th>
             <th class="col-actions"></th>
           </tr>
         </thead>
@@ -789,7 +910,7 @@
             <th class="center">Duration</th>
             <th>Speaker</th>
             <th>Topic</th>
-            <th>Recording</th>
+            <th>Files</th>
             <th class="col-actions"></th>
           </tr>
         </thead>
@@ -811,7 +932,7 @@
             <th class="center">Duration</th>
             <th>Speaker</th>
             <th>Topic</th>
-            <th>Recording</th>
+            <th>Files</th>
             <th class="col-actions"></th>
           </tr>
         </thead>
@@ -852,7 +973,7 @@
             <th class="center">Duration</th>
             <th>Speaker</th>
             <th>Topic</th>
-            <th>Recording</th>
+            <th>Files</th>
             <th class="col-actions"></th>
           </tr>
         </thead>
@@ -874,7 +995,7 @@
             <th class="center">Duration</th>
             <th>Speaker</th>
             <th>Topic</th>
-            <th>Recording</th>
+            <th>Files</th>
             <th class="col-actions"></th>
           </tr>
         </thead>
@@ -892,6 +1013,32 @@
   <p>3-Day Training Event &nbsp;·&nbsp; Friday · Saturday · Sunday</p>
 </footer>
 
+</div>
+
+<!-- Upload Modal -->
+<div class="upload-modal-overlay" id="upload-modal">
+  <div class="upload-modal">
+    <h3>Upload Files</h3>
+    <div class="upload-section">
+      <div class="upload-section-header">
+        <span class="upload-section-title">Slides (.pptx)</span>
+        <a class="current-file" id="modal-slides-link" href="#" target="_blank" style="display:none;">View current</a>
+      </div>
+      <input type="file" id="slides-file-input" accept=".pptx,.ppt,.pdf" />
+      <button class="upload-btn" onclick="uploadFile('slides')">Upload Slides</button>
+      <div class="upload-status" id="slides-upload-status"></div>
+    </div>
+    <div class="upload-section">
+      <div class="upload-section-header">
+        <span class="upload-section-title">Script</span>
+        <a class="current-file" id="modal-script-link" href="#" target="_blank" style="display:none;">View current</a>
+      </div>
+      <input type="file" id="script-file-input" accept=".doc,.docx,.pdf,.txt" />
+      <button class="upload-btn" onclick="uploadFile('scripts')">Upload Script</button>
+      <div class="upload-status" id="script-upload-status"></div>
+    </div>
+    <button class="modal-close-btn" onclick="closeFileModal()">Done</button>
+  </div>
 </div>
 
 <!-- Save Toast -->
@@ -984,19 +1131,11 @@
         speaker: cells[2].textContent.trim(),
         topic: cells[3].textContent.trim()
       };
-      // Extract recording link data (cell index 4)
+      // Extract file links (cell index 4 = files column)
       if (cells.length > 4) {
-        const recCell = cells[4];
-        const linkEl = recCell.querySelector('a');
-        if (linkEl) {
-          item.linkTitle = linkEl.textContent.trim();
-          item.linkUrl = linkEl.getAttribute('href') || '';
-        } else {
-          const placeholder = recCell.querySelector('.recording-placeholder');
-          const text = placeholder ? placeholder.textContent.trim() : recCell.textContent.trim();
-          item.linkTitle = (text === 'Add link') ? '' : text;
-          item.linkUrl = '';
-        }
+        const filesCell = cells[4];
+        item.slidesUrl = filesCell.getAttribute('data-slides-url') || '';
+        item.scriptUrl = filesCell.getAttribute('data-script-url') || '';
       }
       if (row.classList.contains('row-lunch')) item.isLunch = true;
       if (row.classList.contains('row-break')) item.isBreak = true;
@@ -1137,7 +1276,7 @@
   function addRow(tbodyId) {
     const tbody = document.getElementById(tbodyId);
     const isAfternoon = tbodyId.includes('afternoon');
-    const newItem = { time: '--:--', duration: '0 min', speaker: 'New Speaker', topic: 'New Topic', linkTitle: '', linkUrl: '' };
+    const newItem = { time: '--:--', duration: '0 min', speaker: 'New Speaker', topic: 'New Topic', slidesUrl: '', scriptUrl: '' };
     const rowHtml = renderRow(newItem, isAfternoon);
     tbody.insertAdjacentHTML('beforeend', rowHtml);
     // Make the new row draggable
@@ -1230,16 +1369,15 @@
   function renderRow(item, isAfternoon) {
     const rowClass = isAfternoon ? 'afternoon-row' : 'morning-row';
     const specialClass = item.isLunch ? 'row-lunch' : item.isBreak ? 'row-break' : '';
-    const linkTitle = item.linkTitle || '';
-    const linkUrl = item.linkUrl || '';
-    let linkContent;
-    if (linkUrl) {
-      linkContent = `<a href="${linkUrl}" target="_blank" title="${linkUrl}">${linkTitle || 'Link'}</a>`;
-    } else if (linkTitle) {
-      linkContent = `<span class="recording-placeholder">${linkTitle}</span>`;
-    } else {
-      linkContent = `<span class="recording-placeholder">Add link</span>`;
-    }
+    const slidesUrl = item.slidesUrl || '';
+    const scriptUrl = item.scriptUrl || '';
+
+    const slidesLink = slidesUrl
+      ? `<a class="file-link" href="${slidesUrl}" target="_blank">Slides</a>`
+      : `<span class="file-link empty">Slides</span>`;
+    const scriptLink = scriptUrl
+      ? `<a class="file-link" href="${scriptUrl}" target="_blank">Script</a>`
+      : `<span class="file-link empty">Script</span>`;
 
     return `
       <tr class="${rowClass} ${specialClass}">
@@ -1247,7 +1385,7 @@
         <td class="col-dur editable-cell" onclick="editField(this, 'duration')"><span class="dur-badge">${item.duration}</span></td>
         <td class="col-speaker editable-cell" onclick="editField(this, 'speaker')">${item.speaker}</td>
         <td class="col-topic editable-cell" onclick="editField(this, 'topic')" title="${item.topic}">${item.topic}</td>
-        <td class="col-recording" onclick="editLink(this)">${linkContent}</td>
+        <td class="col-files" data-slides-url="${slidesUrl}" data-script-url="${scriptUrl}"><div class="file-links">${slidesLink}<span class="file-separator">|</span>${scriptLink}<button class="btn-upload-open" onclick="openFileModal(this.closest('.col-files'))">Upload</button></div></td>
         <td class="col-actions"><button class="btn-delete" onclick="deleteRow(this)" title="Delete row">&times;</button></td>
       </tr>
     `;
@@ -1374,84 +1512,189 @@
     });
   }
 
-  // Edit recording link (title + URL)
-  function editLink(cell) {
-    if (cell.querySelector('.link-edit-form')) return; // already editing
+  // ── Google Apps Script URL for file uploads ──
+  const UPLOAD_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx4U1IUeiVQJWJESYtxAhXlZ2CfnJvDVDtehwqosWuzo5aXMCpWpRtzk-C5yvYeRraVJw/exec';
 
-    // Get current values
-    const linkEl = cell.querySelector('a');
-    const currentTitle = linkEl ? linkEl.textContent.trim() : '';
-    const currentUrl = linkEl ? (linkEl.getAttribute('href') || '') : '';
+  // Track which cell opened the modal
+  let activeFileCell = null;
 
-    // Build mini form with two inputs
-    const form = document.createElement('div');
-    form.className = 'link-edit-form';
-    form.innerHTML = `
-      <label>Title</label>
-      <input type="text" class="link-title-input" value="${currentTitle}" placeholder="e.g. Session Recording" maxlength="60" />
-      <label>URL</label>
-      <input type="url" class="link-url-input" value="${currentUrl}" placeholder="https://drive.google.com/..." maxlength="500" />
-    `;
+  function openFileModal(cell) {
+    activeFileCell = cell;
+    const slidesUrl = cell.getAttribute('data-slides-url') || '';
+    const scriptUrl = cell.getAttribute('data-script-url') || '';
 
-    cell.innerHTML = '';
-    cell.appendChild(form);
+    // Show/hide current file links
+    const slidesLink = document.getElementById('modal-slides-link');
+    const scriptLink = document.getElementById('modal-script-link');
+    if (slidesUrl) {
+      slidesLink.href = slidesUrl;
+      slidesLink.style.display = 'inline';
+    } else {
+      slidesLink.style.display = 'none';
+    }
+    if (scriptUrl) {
+      scriptLink.href = scriptUrl;
+      scriptLink.style.display = 'inline';
+    } else {
+      scriptLink.style.display = 'none';
+    }
 
-    const titleInput = form.querySelector('.link-title-input');
-    const urlInput = form.querySelector('.link-url-input');
-    titleInput.focus();
-    titleInput.select();
+    // Clear file inputs and statuses
+    document.getElementById('slides-file-input').value = '';
+    document.getElementById('script-file-input').value = '';
+    document.getElementById('slides-upload-status').textContent = '';
+    document.getElementById('script-upload-status').textContent = '';
 
-    let saved = false;
-    function saveLink() {
-      if (saved) return;
-      saved = true;
-      const newTitle = titleInput.value.trim();
-      const newUrl = urlInput.value.trim();
+    // Show modal
+    document.getElementById('upload-modal').classList.add('show');
+  }
 
-      if (newUrl) {
-        cell.innerHTML = `<a href="${newUrl}" target="_blank" title="${newUrl}">${newTitle || 'Link'}</a>`;
-      } else if (newTitle) {
-        cell.innerHTML = `<span class="recording-placeholder">${newTitle}</span>`;
-      } else {
-        cell.innerHTML = `<span class="recording-placeholder">Add link</span>`;
+  function closeFileModal() {
+    document.getElementById('upload-modal').classList.remove('show');
+    activeFileCell = null;
+  }
+
+  // Close modal on overlay click
+  document.getElementById('upload-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeFileModal();
+  });
+
+  async function uploadFile(folderType) {
+    const inputId = folderType === 'slides' ? 'slides-file-input' : 'script-file-input';
+    const statusId = folderType === 'slides' ? 'slides-upload-status' : 'script-upload-status';
+    const fileInput = document.getElementById(inputId);
+    const statusEl = document.getElementById(statusId);
+
+    if (!fileInput.files || !fileInput.files[0]) {
+      statusEl.textContent = 'Please select a file first';
+      statusEl.className = 'upload-status error';
+      return;
+    }
+
+    const file = fileInput.files[0];
+
+    const sizeMB = (file.size / 1024 / 1024).toFixed(1);
+    statusEl.textContent = `Preparing upload (${sizeMB}MB)...`;
+    statusEl.className = 'upload-status uploading';
+
+    // Disable button during upload
+    const btn = fileInput.nextElementSibling;
+    btn.disabled = true;
+
+    try {
+      // Step 1: Ask Apps Script to create a resumable upload session
+      statusEl.textContent = 'Creating upload session...';
+      const initResponse = await fetch(UPLOAD_SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({
+          fileName: file.name,
+          mimeType: file.type || 'application/octet-stream',
+          folderType: folderType
+        })
+      });
+
+      const initText = await initResponse.text();
+      let initResult;
+      try {
+        initResult = JSON.parse(initText);
+      } catch (e) {
+        console.error('Raw init response:', initText);
+        throw new Error('Failed to create upload session');
       }
 
-      // Auto-save to Supabase
-      const tbody = cell.closest('tbody');
+      if (!initResult.success || !initResult.uploadUrl) {
+        throw new Error(initResult.error || 'Failed to create upload session');
+      }
+
+      // Step 2: Upload the raw file directly to Google Drive (no base64!)
+      statusEl.textContent = `Uploading ${sizeMB}MB...`;
+
+      await new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('PUT', initResult.uploadUrl);
+        xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
+        xhr.timeout = 600000; // 10 minutes
+
+        xhr.upload.onprogress = (e) => {
+          if (e.lengthComputable) {
+            const pct = Math.round((e.loaded / e.total) * 100);
+            statusEl.textContent = `Uploading ${sizeMB}MB... ${pct}%`;
+          }
+        };
+
+        xhr.onload = () => resolve();
+        xhr.onerror = () => resolve(); // CORS blocks response but file IS uploaded
+        xhr.ontimeout = () => reject(new Error('Upload timed out'));
+
+        xhr.send(file);
+      });
+
+      // Step 3: Verify the file landed in Drive via Apps Script
+      statusEl.textContent = 'Verifying upload...';
+
+      const verifyResponse = await fetch(UPLOAD_SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({
+          action: 'findFile',
+          fileName: file.name,
+          folderType: folderType
+        })
+      });
+
+      const verifyText = await verifyResponse.text();
+      let verifyResult;
+      try {
+        verifyResult = JSON.parse(verifyText);
+      } catch (e) {
+        throw new Error('Could not verify upload');
+      }
+
+      if (!verifyResult.success) {
+        throw new Error(verifyResult.error || 'File not found after upload');
+      }
+
+      const fileUrl = verifyResult.fileUrl;
+
+      // Step 4: Update UI and save to Supabase
+      statusEl.textContent = 'Uploaded successfully!';
+      statusEl.className = 'upload-status success';
+
+      const attrName = folderType === 'slides' ? 'data-slides-url' : 'data-script-url';
+      activeFileCell.setAttribute(attrName, fileUrl);
+
+      const linkId = folderType === 'slides' ? 'modal-slides-link' : 'modal-script-link';
+      const linkEl = document.getElementById(linkId);
+      linkEl.href = fileUrl;
+      linkEl.style.display = 'inline';
+
+      updateFileCellDisplay(activeFileCell);
+
+      const tbody = activeFileCell.closest('tbody');
       const dp = getTbodyDayPeriod(tbody);
       if (dp) saveScheduleToSupabase(dp.day, dp.period);
+    } catch (err) {
+      console.error('Upload error:', err);
+      statusEl.textContent = 'Upload failed: ' + err.message;
+      statusEl.className = 'upload-status error';
+    } finally {
+      btn.disabled = false;
     }
+  }
 
-    function cancelEdit() {
-      if (currentUrl) {
-        cell.innerHTML = `<a href="${currentUrl}" target="_blank" title="${currentUrl}">${currentTitle || 'Link'}</a>`;
-      } else if (currentTitle) {
-        cell.innerHTML = `<span class="recording-placeholder">${currentTitle}</span>`;
-      } else {
-        cell.innerHTML = `<span class="recording-placeholder">Add link</span>`;
-      }
-    }
+  function updateFileCellDisplay(cell) {
+    const slidesUrl = cell.getAttribute('data-slides-url') || '';
+    const scriptUrl = cell.getAttribute('data-script-url') || '';
 
-    // Save on blur (when clicking outside the form)
-    form.addEventListener('focusout', (e) => {
-      // Only save if focus left the entire form (not just switching between inputs)
-      setTimeout(() => {
-        if (!form.contains(document.activeElement)) {
-          saveLink();
-        }
-      }, 0);
-    });
+    const slidesLink = slidesUrl
+      ? `<a class="file-link" href="${slidesUrl}" target="_blank">Slides</a>`
+      : `<span class="file-link empty">Slides</span>`;
+    const scriptLink = scriptUrl
+      ? `<a class="file-link" href="${scriptUrl}" target="_blank">Script</a>`
+      : `<span class="file-link empty">Script</span>`;
 
-    // Keyboard: Enter saves, Escape cancels, Tab moves between fields
-    titleInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') { urlInput.focus(); e.preventDefault(); }
-      if (e.key === 'Escape') cancelEdit();
-    });
-
-    urlInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') saveLink();
-      if (e.key === 'Escape') cancelEdit();
-    });
+    cell.innerHTML = `<div class="file-links">${slidesLink}<span class="file-separator">|</span>${scriptLink}<button class="btn-upload-open" onclick="openFileModal(this.closest('.col-files'))">Upload</button></div>`;
   }
 
   // Show day
