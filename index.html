@@ -831,8 +831,8 @@
     </div>
 
     <div class="stats-bar">
-      <div class="stat-chip"><span class="stat-val">10:00 AM</span><span class="stat-lbl">Start Time</span></div>
-      <div class="stat-chip"><span class="stat-val">6:00 PM</span><span class="stat-lbl">End Time</span></div>
+      <div class="stat-chip"><span class="stat-val" id="start-time-1">--</span><span class="stat-lbl">Start Time</span></div>
+      <div class="stat-chip"><span class="stat-val" id="end-time-1">--</span><span class="stat-lbl">End Time</span></div>
       <div class="stat-chip stat-modified"><span class="stat-val" id="last-modified-1">--</span><span class="stat-lbl">Last Modified (ET)</span></div>
     </div>
 
@@ -893,8 +893,8 @@
     </div>
 
     <div class="stats-bar">
-      <div class="stat-chip"><span class="stat-val">10:00 AM</span><span class="stat-lbl">Start Time</span></div>
-      <div class="stat-chip"><span class="stat-val">6:00 PM</span><span class="stat-lbl">End Time</span></div>
+      <div class="stat-chip"><span class="stat-val" id="start-time-2">--</span><span class="stat-lbl">Start Time</span></div>
+      <div class="stat-chip"><span class="stat-val" id="end-time-2">--</span><span class="stat-lbl">End Time</span></div>
       <div class="stat-chip stat-modified"><span class="stat-val" id="last-modified-2">--</span><span class="stat-lbl">Last Modified (ET)</span></div>
     </div>
 
@@ -956,8 +956,8 @@
     </div>
 
     <div class="stats-bar">
-      <div class="stat-chip"><span class="stat-val">10:00 AM</span><span class="stat-lbl">Start Time</span></div>
-      <div class="stat-chip"><span class="stat-val">5:00 PM</span><span class="stat-lbl">End Time</span></div>
+      <div class="stat-chip"><span class="stat-val" id="start-time-3">--</span><span class="stat-lbl">Start Time</span></div>
+      <div class="stat-chip"><span class="stat-val" id="end-time-3">--</span><span class="stat-lbl">End Time</span></div>
       <div class="stat-chip stat-modified"><span class="stat-val" id="last-modified-3">--</span><span class="stat-lbl">Last Modified (ET)</span></div>
     </div>
 
@@ -1396,9 +1396,29 @@
     for (let day = 1; day <= 3; day++) {
       const morningHtml = scheduleData[day].morning.map(item => renderRow(item, false)).join('');
       const afternoonHtml = scheduleData[day].afternoon.map(item => renderRow(item, true)).join('');
-      
+
       document.getElementById(`day${day}-morning`).innerHTML = morningHtml;
       document.getElementById(`day${day}-afternoon`).innerHTML = afternoonHtml;
+
+      updateDayTimes(day);
+    }
+  }
+
+  function updateDayTimes(day) {
+    const allSessions = [...(scheduleData[day].morning || []), ...(scheduleData[day].afternoon || [])];
+    if (allSessions.length === 0) return;
+
+    const startTime = allSessions[0].time || '--';
+    document.getElementById(`start-time-${day}`).textContent = startTime;
+
+    const lastSession = allSessions[allSessions.length - 1];
+    const lastTime = lastSession.time || '--';
+    const lastDur = durationToMinutes(lastSession.duration || '0 min');
+    if (lastTime !== '--' && lastDur > 0) {
+      const endMins = timeToMinutes(lastTime) + lastDur;
+      document.getElementById(`end-time-${day}`).textContent = minutesToTime(endMins);
+    } else {
+      document.getElementById(`end-time-${day}`).textContent = lastTime;
     }
   }
 
