@@ -979,11 +979,12 @@
         speaker: cells[2].textContent.trim(),
         topic: cells[3].textContent.trim()
       };
-      // Extract file links (cell index 4 = files column)
+      // Extract file links and folder ID (cell index 4 = files column)
       if (cells.length > 4) {
         const filesCell = cells[4];
         item.slidesUrl = filesCell.getAttribute('data-slides-url') || '';
         item.scriptUrl = filesCell.getAttribute('data-script-url') || '';
+        item.folderId = filesCell.getAttribute('data-folder-id') || '';
       }
       if (row.classList.contains('row-lunch')) item.isLunch = true;
       if (row.classList.contains('row-break')) item.isBreak = true;
@@ -1233,7 +1234,7 @@
         <td class="col-dur"><span class="dur-badge">${item.duration}</span></td>
         <td class="col-speaker">${item.speaker}</td>
         <td class="col-topic" title="${item.topic}">${item.topic}</td>
-        <td class="col-files" data-slides-url="${slidesUrl}" data-script-url="${scriptUrl}"><div class="file-links">${slidesLink}<span class="file-separator">|</span>${scriptLink}<button class="btn-upload-open" onclick="openFileModal(this.closest('.col-files'))">Upload</button></div></td>
+        <td class="col-files" data-slides-url="${slidesUrl}" data-script-url="${scriptUrl}" data-folder-id="${item.folderId || ''}">${item.folderId ? `<div class="file-links">${slidesLink}<span class="file-separator">|</span>${scriptLink}<button class="btn-upload-open" onclick="openFileModal(this.closest('.col-files'))">Upload</button></div>` : ''}</td>
       </tr>
     `;
   }
@@ -1428,14 +1429,21 @@
     if (e.target === this) closeFileModal();
   });
 
-  async function uploadFile(folderType) {
-    const inputId = folderType === 'slides' ? 'slides-file-input' : 'script-file-input';
-    const statusId = folderType === 'slides' ? 'slides-upload-status' : 'script-upload-status';
+  async function uploadFile(fileType) {
+    const inputId = fileType === 'slides' ? 'slides-file-input' : 'script-file-input';
+    const statusId = fileType === 'slides' ? 'slides-upload-status' : 'script-upload-status';
     const fileInput = document.getElementById(inputId);
     const statusEl = document.getElementById(statusId);
 
     if (!fileInput.files || !fileInput.files[0]) {
       statusEl.textContent = 'Please select a file first';
+      statusEl.className = 'upload-status error';
+      return;
+    }
+
+    const folderId = activeFileCell ? activeFileCell.getAttribute('data-folder-id') : '';
+    if (!folderId) {
+      statusEl.textContent = 'No folder assigned to this session';
       statusEl.className = 'upload-status error';
       return;
     }
@@ -1459,7 +1467,7 @@
         body: JSON.stringify({
           fileName: file.name,
           mimeType: file.type || 'application/octet-stream',
-          folderType: folderType
+          folderId: folderId
         })
       });
 
@@ -1511,7 +1519,7 @@
         body: JSON.stringify({
           action: 'findFile',
           fileName: file.name,
-          folderType: folderType
+          folderId: folderId
         })
       });
 
@@ -1533,10 +1541,10 @@
       statusEl.textContent = 'Uploaded successfully!';
       statusEl.className = 'upload-status success';
 
-      const attrName = folderType === 'slides' ? 'data-slides-url' : 'data-script-url';
+      const attrName = fileType === 'slides' ? 'data-slides-url' : 'data-script-url';
       activeFileCell.setAttribute(attrName, fileUrl);
 
-      const linkId = folderType === 'slides' ? 'modal-slides-link' : 'modal-script-link';
+      const linkId = fileType === 'slides' ? 'modal-slides-link' : 'modal-script-link';
       const linkEl = document.getElementById(linkId);
       linkEl.href = fileUrl;
       linkEl.style.display = 'inline';
@@ -1558,6 +1566,9 @@
   function updateFileCellDisplay(cell) {
     const slidesUrl = cell.getAttribute('data-slides-url') || '';
     const scriptUrl = cell.getAttribute('data-script-url') || '';
+    const folderId = cell.getAttribute('data-folder-id') || '';
+
+    if (!folderId) { cell.innerHTML = ''; return; }
 
     const slidesLink = slidesUrl
       ? `<a class="file-link" href="${slidesUrl}" target="_blank">Slides</a>`
