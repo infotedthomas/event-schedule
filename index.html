@@ -1132,11 +1132,12 @@
         speaker: cells[2].textContent.trim(),
         topic: cells[3].textContent.trim()
       };
-      // Extract file links (cell index 4 = files column)
+      // Extract file links and folder ID (cell index 4 = files column)
       if (cells.length > 4) {
         const filesCell = cells[4];
         item.slidesUrl = filesCell.getAttribute('data-slides-url') || '';
         item.scriptUrl = filesCell.getAttribute('data-script-url') || '';
+        item.folderId = filesCell.getAttribute('data-folder-id') || '';
       }
       if (row.classList.contains('row-lunch')) item.isLunch = true;
       if (row.classList.contains('row-break')) item.isBreak = true;
@@ -1277,7 +1278,7 @@
   function addRow(tbodyId) {
     const tbody = document.getElementById(tbodyId);
     const isAfternoon = tbodyId.includes('afternoon');
-    const newItem = { time: '--:--', duration: '0 min', speaker: 'New Speaker', topic: 'New Topic', slidesUrl: '', scriptUrl: '' };
+    const newItem = { time: '--:--', duration: '0 min', speaker: 'New Speaker', topic: 'New Topic', slidesUrl: '', scriptUrl: '', folderId: '' };
     const rowHtml = renderRow(newItem, isAfternoon);
     tbody.insertAdjacentHTML('beforeend', rowHtml);
     // Make the new row draggable
@@ -1386,7 +1387,7 @@
         <td class="col-dur editable-cell" onclick="editField(this, 'duration')"><span class="dur-badge">${item.duration}</span></td>
         <td class="col-speaker editable-cell" onclick="editField(this, 'speaker')">${item.speaker}</td>
         <td class="col-topic editable-cell" onclick="editField(this, 'topic')" title="${item.topic}">${item.topic}</td>
-        <td class="col-files" data-slides-url="${slidesUrl}" data-script-url="${scriptUrl}"><div class="file-links">${slidesLink}<span class="file-separator">|</span>${scriptLink}<button class="btn-upload-open" onclick="openFileModal(this.closest('.col-files'))">Upload</button></div></td>
+        <td class="col-files" data-slides-url="${slidesUrl}" data-script-url="${scriptUrl}" data-folder-id="${item.folderId || ''}"><div class="file-links">${slidesLink}<span class="file-separator">|</span>${scriptLink}<button class="btn-upload-open" onclick="openFileModal(this.closest('.col-files'))">Upload</button></div></td>
         <td class="col-actions"><button class="btn-delete" onclick="deleteRow(this)" title="Delete row">&times;</button></td>
       </tr>
     `;
@@ -1541,6 +1542,13 @@
 
   function openFileModal(cell) {
     activeFileCell = cell;
+    const folderId = cell.getAttribute('data-folder-id') || '';
+
+    if (!folderId) {
+      alert('No dedicated folder for this session. Contact the administrator.');
+      return;
+    }
+
     const slidesUrl = cell.getAttribute('data-slides-url') || '';
     const scriptUrl = cell.getAttribute('data-script-url') || '';
 
