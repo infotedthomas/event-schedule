@@ -537,6 +537,7 @@
     }
 
     .upload-modal {
+      position: relative;
       background: white;
       border-radius: 12px;
       padding: 28px 32px;
@@ -612,21 +613,21 @@
     .upload-status.error { color: #dc2626; }
     .upload-status.uploading { color: #d97706; }
 
-    .modal-close-btn {
-      display: block;
-      width: 100%;
-      padding: 10px;
-      margin-top: 4px;
-      background: #f3f4f6;
-      border: 1px solid #e5e7eb;
-      border-radius: 8px;
-      font-size: 0.9rem;
-      font-weight: 600;
-      color: #374151;
+    .modal-x-btn {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: none;
+      border: none;
+      font-size: 1.6rem;
+      color: #9ca3af;
       cursor: pointer;
-      transition: background 0.2s;
+      line-height: 1;
+      padding: 4px 8px;
+      border-radius: 6px;
+      transition: all 0.15s;
     }
-    .modal-close-btn:hover { background: #e5e7eb; }
+    .modal-x-btn:hover { color: #1f2937; background: #f3f4f6; }
 
     /* ── Actions Column ── */
     .col-actions { width: 40px; text-align: center; padding: 4px !important; }
@@ -901,6 +902,7 @@
 <!-- Upload Modal -->
 <div class="upload-modal-overlay" id="upload-modal">
   <div class="upload-modal">
+    <button class="modal-x-btn" onclick="closeFileModal()">&times;</button>
     <h3>Upload Files</h3>
     <div class="upload-section">
       <div class="upload-section-header">
@@ -920,7 +922,6 @@
       <button class="upload-btn" onclick="uploadFile('scripts')">Upload Script</button>
       <div class="upload-status" id="script-upload-status"></div>
     </div>
-    <button class="modal-close-btn" onclick="closeFileModal()">Done</button>
   </div>
 </div>
 
